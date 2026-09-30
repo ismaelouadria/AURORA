@@ -27,6 +27,32 @@ Timur's final specialization, including the possible role of hardware, is delibe
 not decided here. No core dependency should assume the outcome until the decision is
 made and recorded.
 
+## GitHub primary-owner routing
+
+GitHub issue assignment uses the following canonical routing for unambiguous
+technical workstreams:
+
+| Routing label | Primary owner | GitHub |
+|---|---|---|
+| `safety-controller` | Ismael Ouadria | `@ismaelouadria` |
+| `simulation` | Abdulaziz | `@abdulaziz-alsibakhi` |
+| `ai-controller` | Abdurrahman | `@AbduCh04` |
+| `data-logging` | Mahdi Bouakline | `@BouaklineMahdi` |
+
+This routing establishes the default **primary** assignee. It does not establish
+exclusive ownership and it does not automatically choose the backup/reviewer.
+
+Cross-cutting labels such as `system-design`, `integration`, `validation`,
+`documentation`, `experiments`, `decision`, and `demo` are deliberately not
+auto-routed because their primary owner depends on the specific outcome.
+
+If an issue contains more than one of the four routing labels above and they map
+to different people, automation must not guess the primary owner. The issue
+requires explicit ownership resolution.
+
+Timur is deliberately excluded from automatic routing until his specialization
+is resolved through the corresponding project decision.
+
 ## Primary owner responsibilities
 
 A primary owner should:

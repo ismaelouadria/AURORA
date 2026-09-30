@@ -1,0 +1,64 @@
+name: Primary Owner Routing
+
+on:
+  issues:
+    types: [opened, labeled, unlabeled]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  assign-primary-owner:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Route unambiguous technical workstreams
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const routing = {
+              "safety-controller": "ismaelouadria",
+              "simulation": "abdulaziz-alsibakhi",
+              "ai-controller": "AbduCh04",
+              "data-logging": "BouaklineMahdi"
+            };
+
+            const issue = context.payload.issue;
+            const labels = issue.labels
+              .map(label => typeof label === "string" ? label : label.name)
+              .filter(Boolean);
+
+            const matches = [...new Set(
+              labels
+                .filter(label => Object.hasOwn(routing, label))
+                .map(label => routing[label])
+            )];
+
+            if (matches.length === 0) {
+              core.info("No primary-owner routing label is present; leaving assignment unchanged.");
+              return;
+            }
+
+            if (matches.length > 1) {
+              core.warning(
+                `Ambiguous primary ownership: routing labels map to ${matches.join(", ")}. ` +
+                "Leaving assignment unchanged for explicit resolution."
+              );
+              return;
+            }
+
+            const primary = matches[0];
+
+            if (issue.assignees.some(a => a.login === primary)) {
+              core.info(`${primary} is already assigned.`);
+              return;
+            }
+
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              assignees: [primary]
+            });
+
+            core.info(`Assigned primary owner ${primary}.`);
