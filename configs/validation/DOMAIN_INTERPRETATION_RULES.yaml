@@ -1,0 +1,292 @@
+schema_version: 1
+
+purpose: >
+  Machine-readable registry for deterministic domain-sensitive validation rules
+  that are justified before AURORA freezes its final observation, action,
+  constraint, CRM, or experiment definitions.
+
+claim_boundary: >
+  Passing these rules establishes only the checks explicitly represented here.
+  It does not establish real-field validity, physical safety, or correctness of
+  an unresolved reservoir interpretation.
+
+allowed_statuses:
+  - SOURCE_BACKED
+  - EXPERIMENTALLY_SUPPORTED
+  - EXPERT_REVIEWED
+  - PROVISIONAL
+  - UNRESOLVED
+
+allowed_result_states:
+  - VALID_FOR_SCOPE
+  - VALID_WITH_WARNING
+  - INSUFFICIENT_EVIDENCE
+  - INVALID_DATA
+  - INVALID_EXPERIMENT
+  - OUTSIDE_ENVELOPE
+  - NUMERICAL_FAILURE
+  - DOMAIN_REVIEW_REQUIRED
+
+rules:
+
+  - id: DVR-001
+    name: finite_numeric_value
+    category: structural
+    automation: deterministic
+    status: SOURCE_BACKED
+    applies_to: numeric_quantity
+    check: finite
+    failure_state: INVALID_DATA
+    rationale: >
+      NaN and infinite values must not silently propagate into domain
+      interpretation, controller decisions, metrics, or claims.
+    evidence:
+      - docs/validation/VALIDATION_SPECIFICATION.md
+    limitation: >
+      Finiteness establishes numerical representability only; it does not
+      establish physical plausibility.
+
+  - id: DVR-002
+    name: explicit_units
+    category: unit
+    automation: deterministic
+    status: SOURCE_BACKED
+    applies_to: physical_quantity
+    check: units_declared
+    failure_state: INSUFFICIENT_EVIDENCE
+    rationale: >
+      A physical quantity cannot be safely compared or interpreted when its
+      units are unknown.
+    evidence:
+      - docs/data-and-logging/DATA_DICTIONARY.md
+      - docs/validation/VALIDATION_SPECIFICATION.md
+    limitation: >
+      Declared units must still correspond to the actual source semantics.
+
+  - id: DVR-003
+    name: explicit_sign_convention
+    category: sign
+    automation: deterministic
+    status: SOURCE_BACKED
+    applies_to: signed_rate_or_action
+    check: sign_convention_declared
+    failure_state: INSUFFICIENT_EVIDENCE
+    rationale: >
+      Production, injection, rates, actions, and residuals must not be
+      interpreted from sign alone unless the convention is known.
+    evidence:
+      - docs/data-and-logging/DATA_DICTIONARY.md
+      - docs/reservoir-knowledge/WATERFLOOD_AND_WELL_CONTROLS.md
+    limitation: >
+      This rule checks semantic declaration, not whether the declared
+      convention is correct for a particular external source.
+
+  - id: DVR-004
+    name: rate_cumulative_distinction
+    category: semantic
+    automation: deterministic
+    status: SOURCE_BACKED
+    applies_to: rate_or_cumulative_quantity
+    check: time_basis_declared
+    failure_state: INVALID_DATA
+    rationale: >
+      Instantaneous or interval rates and cumulative quantities are different
+      semantic objects and must not be silently interchanged.
+    evidence:
+      - docs/reservoir-knowledge/RESERVOIR_DOMAIN_GUIDE.md
+      - docs/data-and-logging/DATA_DICTIONARY.md
+    limitation: >
+      A declared time basis does not by itself verify the source extraction.
+
+  - id: DVR-005
+    name: pressure_semantic_identity
+    category: semantic
+    automation: deterministic
+    status: SOURCE_BACKED
+    applies_to: pressure_quantity
+    check: pressure_role_declared
+    failure_state: INSUFFICIENT_EVIDENCE
+    rationale: >
+      Reservoir/grid pressure, well BHP, predictions, normalized features,
+      residuals, uncertainty quantities, and constraint expressions are not
+      interchangeable.
+    evidence:
+      - docs/reservoir-knowledge/RESERVOIR_DOMAIN_GUIDE.md
+      - docs/data-and-logging/DATA_DICTIONARY.md
+    limitation: >
+      The exact OPM pressure quantity and source-vector semantics remain
+      version/configuration dependent until verified.
+
+  - id: DVR-006
+    name: proposed_applied_action_distinction
+    category: control_lineage
+    automation: deterministic
+    status: SOURCE_BACKED
+    applies_to: control_action
+    check: action_stage_declared
+    failure_state: INVALID_EXPERIMENT
+    rationale: >
+      Controller-proposed, safety-filtered, simulator-requested, effective,
+      and realized quantities must remain distinguishable.
+    evidence:
+      - docs/reservoir-knowledge/WATERFLOOD_AND_WELL_CONTROLS.md
+      - docs/data-and-logging/README.md
+    limitation: >
+      Exact action schemas remain unfrozen until architecture work.
+
+  - id: DVR-007
+    name: provenance_present
+    category: provenance
+    automation: deterministic
+    status: SOURCE_BACKED
+    applies_to: controlled_result
+    check: provenance_declared
+    failure_state: INSUFFICIENT_EVIDENCE
+    rationale: >
+      A controlled result must retain enough provenance to identify the
+      source/model/configuration and relevant transformation lineage.
+    evidence:
+      - docs/data-and-logging/README.md
+      - docs/validation/VALIDATION_SPECIFICATION.md
+    limitation: >
+      Presence of provenance metadata does not prove that the metadata is
+      truthful or complete.
+
+  - id: DVR-008
+    name: threshold_classification_required
+    category: threshold
+    automation: deterministic
+    status: SOURCE_BACKED
+    applies_to: threshold_or_constraint
+    check: threshold_class_declared
+    failure_state: INSUFFICIENT_EVIDENCE
+    rationale: >
+      Hard domain constraints, encoded safety constraints, simulator limits,
+      experimental bounds, warnings, anomaly thresholds, expected ranges, and
+      performance targets have different meanings.
+    evidence:
+      - docs/validation/CONSTRAINT_AND_THRESHOLD_REGISTER.md
+    limitation: >
+      Classification does not justify the numerical value of a threshold.
+
+  - id: DVR-009
+    name: historical_range_not_physical_limit
+    category: claim_boundary
+    automation: policy
+    status: SOURCE_BACKED
+    applies_to: threshold_or_constraint
+    check: physical_limit_requires_independent_domain_evidence
+    failure_state: DOMAIN_REVIEW_REQUIRED
+    rationale: >
+      A historical Volve range, Egg baseline range, percentile, or convenient
+      numerical value must not become a hard physical or safety constraint
+      solely because the value is available.
+    evidence:
+      - docs/validation/CONSTRAINT_AND_THRESHOLD_REGISTER.md
+    limitation: >
+      A historical range may still be useful descriptively when labelled with
+      its actual provenance and scope.
+
+  - id: DVR-010
+    name: abnormal_not_automatically_unsafe
+    category: interpretation
+    automation: policy
+    status: SOURCE_BACKED
+    applies_to: interpreted_result
+    check: escalation_requires_evidence
+    failure_state: DOMAIN_REVIEW_REQUIRED
+    rationale: >
+      Unusual behaviour does not automatically imply physical concern, an
+      encoded safety violation, or real-world unsafe behaviour.
+    evidence:
+      - docs/validation/INTERPRETATION_FRAMEWORK.md
+    limitation: >
+      Specific escalation criteria remain task- and quantity-dependent.
+
+  - id: DVR-011
+    name: correlation_not_connectivity_proof
+    category: interpretation
+    automation: policy
+    status: SOURCE_BACKED
+    applies_to: injector_producer_relationship
+    check: causal_claim_requires_additional_evidence
+    failure_state: DOMAIN_REVIEW_REQUIRED
+    rationale: >
+      Contemporaneous correlation alone is insufficient to establish a
+      specific causal injector-producer relationship.
+    evidence:
+      - docs/reservoir-knowledge/WATERFLOOD_AND_WELL_CONTROLS.md
+    limitation: >
+      Appropriate evidence may include controlled perturbations, temporal
+      response analysis, model identification, cross-realization evidence,
+      domain reasoning, or qualified review.
+
+  - id: DVR-012
+    name: simulator_not_real_field_truth
+    category: claim_boundary
+    automation: policy
+    status: SOURCE_BACKED
+    applies_to: opm_egg_result
+    check: real_field_claim_prohibited_without_external_validation
+    failure_state: OUTSIDE_ENVELOPE
+    rationale: >
+      OPM plus Egg supports conclusions about the configured numerical
+      experiment, not automatic conclusions about an operating reservoir.
+    evidence:
+      - docs/reservoir-knowledge/MODEL_AND_DATA_ROLES.md
+    limitation: >
+      Real-field validation would require evidence beyond the current
+      numerical-reference experiment.
+
+  - id: DVR-013
+    name: qp_feasibility_not_physical_safety
+    category: claim_boundary
+    automation: policy
+    status: SOURCE_BACKED
+    applies_to: safety_filter_result
+    check: safety_claim_limited_to_encoded_model_and_constraints
+    failure_state: DOMAIN_REVIEW_REQUIRED
+    rationale: >
+      Feasibility or successful projection by a QP-style safety layer
+      establishes behaviour relative to its encoded model and constraints,
+      not unconditional physical safety.
+    evidence:
+      - docs/reservoir-knowledge/MODEL_AND_DATA_ROLES.md
+      - docs/validation/CONSTRAINT_AND_THRESHOLD_REGISTER.md
+    limitation: >
+      The final AURORA QP formulation and safety quantities are not yet frozen.
+
+  - id: DVR-014
+    name: crm_reference_alignment
+    category: model_mismatch
+    automation: deterministic
+    status: PROVISIONAL
+    applies_to: crm_opm_comparison
+    check: compared_quantity_units_time_and_entity_aligned
+    failure_state: INVALID_EXPERIMENT
+    rationale: >
+      A CRM prediction and OPM reference value must represent the same intended
+      quantity, entity, units, and aligned time basis before their residual can
+      be interpreted.
+    evidence:
+      - docs/validation/INTERPRETATION_FRAMEWORK.md
+      - docs/data-and-logging/DATA_DICTIONARY.md
+    limitation: >
+      Exact CRM outputs and mismatch definitions remain unfrozen.
+
+  - id: DVR-015
+    name: unknown_remains_unknown
+    category: evidence
+    automation: policy
+    status: SOURCE_BACKED
+    applies_to: unresolved_interpretation
+    check: unresolved_not_promoted_without_evidence
+    failure_state: INSUFFICIENT_EVIDENCE
+    rationale: >
+      Missing domain evidence must remain visible as unresolved or
+      insufficient rather than being converted into a convenient assumption.
+    evidence:
+      - docs/reservoir-knowledge/SOURCES_AND_ASSUMPTIONS.md
+      - docs/validation/VALIDATION_SPECIFICATION.md
+    limitation: >
+      Resolution requires the evidence appropriate to the claim.

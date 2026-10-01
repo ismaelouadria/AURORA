@@ -106,3 +106,27 @@ A numerical value does not become a safety limit merely because it appears in a
 historical dataset or one simulation run.
 
 See `../validation/CONSTRAINT_AND_THRESHOLD_REGISTER.md`.
+
+
+## Evidence discipline
+
+AURORA separates three different statements that are easy to conflate:
+
+1. **General domain relationship** — supported by established
+   reservoir-engineering knowledge or literature.
+2. **Simulator/configuration behaviour** — supported by OPM documentation,
+   the Egg configuration, and reproducible simulation evidence.
+3. **AURORA experiment conclusion** — supported by the controlled experiment
+   actually executed.
+
+For example, reservoir-domain knowledge can justify investigating delayed and
+coupled injector/producer response. It does not by itself establish the
+connectivity strength, lag, or causal effect for a particular Egg realization.
+
+Likewise, an observed Egg/OPM response establishes behaviour of that configured
+numerical experiment. It must not be silently generalized into a real-field
+operating claim.
+
+When a relationship materially affects an AURORA design decision, validation
+rule, constraint, or reported conclusion, preserve the evidence class and
+claim boundary with the result.

@@ -22,6 +22,7 @@ marked for qualified review.
 | What do Egg, OPM Flow, Volve, and CRM each represent? | `MODEL_AND_DATA_ROLES.md` |
 | What does a term mean? | `GLOSSARY.md` |
 | Where did a domain statement or assumption come from? | `SOURCES_AND_ASSUMPTIONS.md` |
+| What should a reservoir-domain expert review? | `EXPERT_REVIEW_PACKET.md` |
 | What does an AURORA variable mean? | `../data-and-logging/DATA_DICTIONARY.md` |
 | How should data be interpreted? | `../validation/INTERPRETATION_FRAMEWORK.md` |
 | Why does a threshold or constraint exist? | `../validation/CONSTRAINT_AND_THRESHOLD_REGISTER.md` |

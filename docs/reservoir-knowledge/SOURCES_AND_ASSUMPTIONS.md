@@ -102,6 +102,88 @@ The exact semantics of individual workbook columns require the applicable metada
 documentation, or defensible cross-check. They must not be guessed from column names
 alone.
 
+
+## Domain-fundamentals grounding
+
+The following source classes ground stable reservoir concepts used by AURORA.
+They do **not** freeze project-specific numerical limits, controller variables,
+or safety constraints.
+
+### Reservoir-flow fundamentals
+
+For stable concepts such as porosity, permeability, saturation, pressure-driven
+flow, multiphase reservoir behaviour, well behaviour, and waterflooding,
+AURORA should rely on established reservoir-engineering references or
+peer-reviewed literature appropriate to the exact claim.
+
+These sources may support qualitative physical meaning and established
+relationships. They do not automatically support a project-specific numerical
+threshold.
+
+### OPM-specific semantics
+
+OPM-specific behaviour must be grounded in the documentation for the version
+actually used by AURORA.
+
+The official OPM Flow documentation establishes, among other capabilities, that
+Flow is a fully implicit black-oil reservoir simulator and supports well
+constraints including bottom-hole pressure, tubing-head pressure, and
+surface/reservoir rates.
+
+Canonical entry points:
+
+- https://opm-project.org/?page_id=19
+- https://opm-project.org/?page_id=955
+
+Exact keyword, summary-vector, unit, sign, report-step, control-mode, and output
+semantics must be verified against the applicable Flow release and experiment
+configuration before becoming frozen AURORA semantics.
+
+### Waterflood interpretation
+
+AURORA may rely on established reservoir-engineering sources for the general
+facts that injection and production interact through reservoir dynamics and
+that response depends on the reservoir model, connectivity, fluid/rock
+properties, well configuration, controls, and time.
+
+AURORA must **not** infer a specific injector-producer causal relationship from
+a simple contemporaneous correlation alone.
+
+Project-specific connectivity or response claims require evidence appropriate
+to the experiment, such as controlled perturbation, model identification,
+cross-realization analysis, or qualified review.
+
+### CRM / reduced-order modelling
+
+Capacitance-resistance-model literature is the appropriate evidence class for
+claims about CRM structure, assumptions, identification, connectivity
+parameters, time response, and predictive limitations.
+
+Until AURORA selects and records a specific CRM/CRMIP formulation, the project
+must not silently treat one literature formulation as the canonical
+implementation.
+
+The selected primary CRM source(s), equations, parameter semantics, fitting
+procedure, assumptions, and validation envelope must be recorded as part of the
+controlled CRM design decision before the reduced-order model is considered
+frozen.
+
+### Evidence-to-claim rule
+
+For every domain-sensitive statement used in design or evaluation, ask:
+
+1. What exact claim are we making?
+2. Which source or experiment supports that exact claim?
+3. Is the evidence simulator-specific, benchmark-specific, general domain
+   knowledge, project experimental evidence, or qualified review?
+4. Does the evidence justify a qualitative relationship only, or also a
+   numerical value?
+5. Under what conditions does the statement hold?
+6. What stronger interpretation remains unsupported?
+
+A source is not sufficient merely because it discusses the same topic.
+
+
 ## Assumption states
 
 Every material domain assumption should be identifiable as one of:

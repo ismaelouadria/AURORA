@@ -43,3 +43,19 @@ AURORA distinguishes:
 4. real-field validity.
 
 Passing one layer does not imply passing the next.
+
+
+## Machine-readable foundation
+
+Deterministic and policy-level domain-validation rules that are justified
+before the final architecture is frozen are registered in:
+
+`../../configs/validation/DOMAIN_INTERPRETATION_RULES.yaml`
+
+Validate the registry with:
+
+    python3 scripts/validation/validate_domain_rules.py
+
+The registry deliberately does not invent unresolved numerical reservoir
+thresholds. The richer result-interpretation system is implemented later under
+the dedicated result-interpretation workstream.
