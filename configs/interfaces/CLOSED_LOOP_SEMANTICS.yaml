@@ -1,0 +1,199 @@
+schema_version: 1
+registry_status: PROVISIONAL
+purpose: 'Candidate semantic contract for the AURORA closed loop. This registry freezes representation and interpretation rules needed for architecture review while leaving unsupported reservoir-specific choices explicitly unresolved.
+
+  '
+claim_boundary:
+- Interface inclusion does not establish physical importance.
+- Simulator availability does not automatically authorize controller observability.
+- Historical data ranges do not establish physical limits.
+- Proposed controller actions and safety-filtered applied actions are distinct.
+- Exact reservoir quantities remain provisional where source/configuration evidence is incomplete.
+status_values:
+- SOURCE_BACKED
+- EXPERIMENTALLY_SUPPORTED
+- EXPERT_REVIEWED
+- PROVISIONAL
+- UNRESOLVED
+control_cycle:
+  ordering:
+  - simulator_state
+  - observation_extraction
+  - controller_proposal
+  - safety_evaluation
+  - applied_action
+  - simulator_advance
+  - telemetry
+  control_interval:
+    status: UNRESOLVED
+    value: null
+    unit: null
+    semantics: 'Duration represented by one closed-loop decision step. It must be fixed or explicitly supplied by experiment configuration before quantitative runs.
+
+      '
+    prohibition: 'Code must not silently assume a control interval when one is absent.
+
+      '
+identity:
+  well_id:
+    type: string
+    required: true
+    semantics: Stable simulator/configuration well identifier.
+  well_role:
+    type: enum
+    values:
+    - INJECTOR
+    - PRODUCER
+    required: true
+    semantics: Configured well role for the experiment.
+  realization_id:
+    type: string
+    required: true
+    semantics: Identifies the reservoir realization/configuration being executed.
+  control_step:
+    type: integer
+    required: true
+    semantics: Monotonic closed-loop decision-step index.
+observation_candidates:
+- id: OBS-001
+  name: well_bottom_hole_pressure
+  scope: per_well
+  physical_quantity: pressure
+  unit: Pa
+  sign_convention: nonnegative_absolute_pressure
+  timing: end_of_previous_simulator_interval
+  missing_policy: invalid_observation_until_handled
+  source: OPM
+  status: PROVISIONAL
+  controller_visibility: UNRESOLVED
+  interpretation:
+    meaning: 'Bottom-hole pressure associated with the identified well and simulator state.
+
+      '
+    limitations:
+    - Exact OPM output/vector identity must be verified before implementation freeze.
+    - Must not be confused with field pressure, average reservoir pressure, or normalized ML features.
+- id: OBS-002
+  name: well_phase_rate
+  scope: per_well_per_phase
+  physical_quantity: volumetric_rate
+  unit: m3/day
+  sign_convention: UNRESOLVED
+  timing: end_of_previous_simulator_interval
+  missing_policy: invalid_observation_until_handled
+  source: OPM
+  status: PROVISIONAL
+  controller_visibility: UNRESOLVED
+  interpretation:
+    meaning: 'Simulator-reported phase rate for an identified well.
+
+      '
+    limitations:
+    - Exact phase set and OPM sign convention must be verified before implementation freeze.
+    - Rate and cumulative production/injection are not interchangeable.
+- id: OBS-003
+  name: cumulative_phase_volume
+  scope: per_well_per_phase
+  physical_quantity: cumulative_volume
+  unit: m3
+  sign_convention: nonnegative_magnitude_by_named_quantity
+  timing: cumulative_through_end_of_previous_interval
+  missing_policy: invalid_observation_until_handled
+  source: OPM
+  status: PROVISIONAL
+  controller_visibility: UNRESOLVED
+  interpretation:
+    meaning: 'Cumulative named production or injection quantity through the current simulator time.
+
+      '
+    limitations:
+    - Inclusion in telemetry does not imply inclusion in the controller observation vector.
+action_candidates:
+- id: ACT-001
+  name: well_rate_target
+  scope: per_well
+  physical_quantity: volumetric_rate_target
+  unit: m3/day
+  sign_convention: 'Canonical AURORA action representation uses nonnegative target magnitude plus explicit well_role; simulator-specific sign conversion occurs only at the adapter boundary.
+
+    '
+  timing: applies_to_next_control_interval
+  source: controller_or_baseline_policy
+  status: PROVISIONAL
+  controller_authority: UNRESOLVED
+  interpretation:
+    limitations:
+    - Availability as an OPM control does not by itself make it a selected AURORA action.
+    - Allowed wells/phases and simulator mapping must be frozen before implementation.
+action_stages:
+  proposed_action:
+    producer: controller_or_baseline
+    semantics: Requested action before safety filtering.
+    immutable_after_creation: true
+  applied_action:
+    producer: safety_layer
+    semantics: Final action passed to the simulator after safety evaluation/projection.
+    immutable_after_creation: true
+  intervention:
+    semantics: 'Difference or decision record explaining whether and how the safety layer changed the proposed action.
+
+      '
+    required_when_actions_differ: true
+mappings:
+  simulator_to_controller:
+    stages:
+    - extract_named_physical_quantities
+    - validate_identity_units_timing_and_finiteness
+    - apply_documented_transformations_if_any
+    - construct_candidate_observation
+    unresolved:
+    - final_observation_membership
+    - normalization_or_scaling
+    - exact_opm_summary_vector_mapping
+  safety_to_simulator:
+    stages:
+    - receive_proposed_action
+    - evaluate_encoded_constraints
+    - produce_applied_action
+    - convert_canonical_action_to_verified_opm_control_semantics
+    - advance_simulator
+    unresolved:
+    - final_action_membership
+    - exact_opm_control_keywords
+    - final_action_bounds
+egg_benchmark_evidence:
+  evidence_class: BENCHMARK_BASELINE
+  source: supplied Egg benchmark schedule audited in AURORA F2 evidence
+  evidence_paths:
+  - docs/feasibility/evidence/F2/egg_physical_control_sections.txt
+  - docs/feasibility/evidence/F2/egg_engineering_properties.csv
+  - docs/feasibility/evidence/F2/egg_audit.json
+  observed_topology:
+    injector_count: 8
+    producer_count: 4
+  observed_schedule:
+    timestep_count: 120
+    timestep_length_days: 30.0
+    total_duration_days: 3600.0
+  observed_controls:
+    injectors:
+      keyword: WCONINJE
+      phase: WATER
+      status: OPEN
+      control_mode: RATE
+      baseline_rate_raw: 79.5
+      additional_raw_value: 420.0
+      additional_raw_value_semantics: UNRESOLVED
+    producers:
+      keyword: WCONPROD
+      status: OPEN
+      control_mode: BHP
+      baseline_bhp_raw: 395.0
+  claim_boundary:
+  - Observed benchmark values describe the supplied Egg baseline configuration.
+  - A baseline value is not an admissible action bound.
+  - A baseline value is not a physical limit.
+  - A baseline value is not an encoded safety constraint.
+  - The supplied 30-day schedule spacing does not by itself freeze AURORA's controller intervention interval.
+  - The raw injector value 420 must remain unresolved until its exact deck-field semantics are verified.
+  - Requested simulator outputs are not proof that an OPM execution produced or exposed those outputs.

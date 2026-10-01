@@ -1,0 +1,146 @@
+schema_version: 1
+registry_status: PROVISIONAL
+purpose: 'Candidate AURORA constraint and threshold registry. It defines semantics and provenance requirements without inventing unsupported reservoir limits.
+
+  '
+constraint_classes:
+- HARD_PHYSICAL_DOMAIN
+- ENCODED_SAFETY_CONTROLLER
+- SIMULATOR_CONTROL_LIMIT
+- EXPERIMENTAL_BOUND
+- WARNING
+- STATISTICAL_ANOMALY
+- EXPECTED_RANGE
+- PERFORMANCE_TARGET
+status_values:
+- SOURCE_BACKED
+- EXPERIMENTALLY_SUPPORTED
+- EXPERT_REVIEWED
+- PROVISIONAL
+- UNRESOLVED
+threshold_requirements:
+  every_numeric_threshold_requires:
+  - value
+  - unit
+  - class
+  - provenance
+  - status
+  - scope
+  - interpretation
+  prohibited_promotions:
+  - historical_range_to_physical_limit_without_justification
+  - baseline_range_to_physical_limit_without_justification
+  - percentile_to_physical_limit_without_justification
+  - convenient_constant_to_physical_limit_without_justification
+violation_semantics:
+  margin:
+    semantics: 'Signed distance to an encoded constraint boundary under the constraint''s documented convention.
+
+      '
+    sign_convention: positive_safe_zero_boundary_negative_violation
+  violation:
+    semantics: Encoded constraint margin is strictly below zero.
+  boundary:
+    semantics: Encoded constraint margin equals zero within declared numerical tolerance.
+  near_miss:
+    semantics: 'A warning state defined only when an explicit, provenance-backed near-miss threshold exists. No universal numerical near-miss threshold is assumed.
+
+      '
+  claim_boundary: 'Violation of an encoded model constraint is not automatically proof of real-field physical unsafety, and satisfaction is not proof of unconditional physical safety.
+
+    '
+candidate_constraints:
+- id: CTR-001
+  name: selected_pressure_constraint
+  quantity: well_bottom_hole_pressure
+  class: ENCODED_SAFETY_CONTROLLER
+  scope: per_selected_well
+  mathematical_form: lower_and_or_upper_bound
+  unit: Pa
+  threshold:
+    lower: null
+    upper: null
+    provenance: UNRESOLVED
+    status: UNRESOLVED
+  status: PROVISIONAL
+  interpretation:
+    meaning: 'Candidate pressure-derived encoded safety constraint once the exact pressure quantity, affected wells, bounds, and provenance are justified.
+
+      '
+    limitations:
+    - No numerical pressure bound is frozen here.
+    - Exact pressure semantics must align with the closed-loop interface registry.
+- id: CTR-002
+  name: controller_action_bound
+  quantity: well_rate_target
+  class: EXPERIMENTAL_BOUND
+  scope: per_controlled_well
+  mathematical_form: lower_and_upper_bound
+  unit: m3/day
+  threshold:
+    lower: null
+    upper: null
+    provenance: UNRESOLVED
+    status: UNRESOLVED
+  status: PROVISIONAL
+  interpretation:
+    meaning: 'Candidate action-space bound needed for controller and safety-layer formulation.
+
+      '
+    limitations:
+    - Bounds must follow the selected action semantics and justified experiment envelope.
+    - No numerical rate bound is frozen here.
+- id: CTR-003
+  name: result_warning_or_anomaly
+  quantity: UNRESOLVED
+  class: WARNING
+  scope: experiment_or_signal_specific
+  mathematical_form: UNRESOLVED
+  unit: UNRESOLVED
+  threshold:
+    value: null
+    provenance: UNRESOLVED
+    status: UNRESOLVED
+  status: UNRESOLVED
+  interpretation:
+    meaning: 'Placeholder for operationally useful warning/anomaly criteria after the monitored quantity and evidence basis are defined.
+
+      '
+    limitations:
+    - Statistical unusualness is not equivalent to physical invalidity or safety violation.
+egg_benchmark_evidence:
+  evidence_class: BENCHMARK_BASELINE
+  source: supplied Egg benchmark schedule audited in AURORA F2 evidence
+  evidence_paths:
+  - docs/feasibility/evidence/F2/egg_physical_control_sections.txt
+  - docs/feasibility/evidence/F2/egg_engineering_properties.csv
+  - docs/feasibility/evidence/F2/egg_audit.json
+  observed_topology:
+    injector_count: 8
+    producer_count: 4
+  observed_schedule:
+    timestep_count: 120
+    timestep_length_days: 30.0
+    total_duration_days: 3600.0
+  observed_controls:
+    injectors:
+      keyword: WCONINJE
+      phase: WATER
+      status: OPEN
+      control_mode: RATE
+      baseline_rate_raw: 79.5
+      additional_raw_value: 420.0
+      additional_raw_value_semantics: UNRESOLVED
+    producers:
+      keyword: WCONPROD
+      status: OPEN
+      control_mode: BHP
+      baseline_bhp_raw: 395.0
+  claim_boundary:
+  - Observed benchmark values describe the supplied Egg baseline configuration.
+  - A baseline value is not an admissible action bound.
+  - A baseline value is not a physical limit.
+  - A baseline value is not an encoded safety constraint.
+  - The supplied 30-day schedule spacing does not by itself freeze AURORA's controller intervention interval.
+  - The raw injector value 420 must remain unresolved until its exact deck-field semantics are verified.
+  - Requested simulator outputs are not proof that an OPM execution produced or exposed those outputs.
