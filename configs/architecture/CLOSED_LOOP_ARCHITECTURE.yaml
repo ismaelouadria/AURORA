@@ -1,0 +1,454 @@
+schema_version: 1
+registry_status: PROVISIONAL_ARCHITECTURE_FREEZE
+
+purpose: >
+  Define AURORA closed-loop component responsibilities, authority boundaries,
+  information flow, state ownership, and interface contracts without silently
+  resolving domain-sensitive quantities that remain unresolved in the
+  candidate interface and constraint registries.
+
+foundation:
+  domain_rules: configs/validation/DOMAIN_INTERPRETATION_RULES.yaml
+  interface_semantics: configs/interfaces/CLOSED_LOOP_SEMANTICS.yaml
+  constraint_semantics: configs/safety/CONSTRAINT_REGISTRY.yaml
+
+architecture_invariants:
+  - id: ARCH-INV-001
+    statement: The controller may propose an action but may not directly apply an action to the simulator.
+  - id: ARCH-INV-002
+    statement: Every simulator-bound control passes through the safety authority boundary.
+  - id: ARCH-INV-003
+    statement: proposed_action and applied_action are distinct records even when numerically identical.
+  - id: ARCH-INV-004
+    statement: The simulator adapter receives applied_action, never raw controller output.
+  - id: ARCH-INV-005
+    statement: Telemetry observes decisions and outcomes but has no control authority.
+  - id: ARCH-INV-006
+    statement: Missing, malformed, stale, or non-finite required inputs may not silently become valid controller observations.
+  - id: ARCH-INV-007
+    statement: A failed or unresolved safety evaluation may not silently pass the proposed action through unchanged.
+  - id: ARCH-INV-008
+    statement: Simulator state availability does not imply controller observability.
+  - id: ARCH-INV-009
+    statement: Historical or benchmark values do not become physical safety limits through architecture configuration.
+  - id: ARCH-INV-010
+    statement: The control interval remains unresolved until supported by an explicit engineering decision.
+  - id: ARCH-INV-011
+    statement: Component state ownership is explicit and may not be duplicated implicitly across subsystem boundaries.
+  - id: ARCH-INV-012
+    statement: Every completed control step has reconstructable provenance sufficient to distinguish proposed action, safety disposition, applied action, and simulator outcome.
+
+execution_model:
+  mode: SYNCHRONOUS_STEPWISE
+  status: PROVISIONAL
+  ordering:
+    - simulator_adapter.read_state
+    - observation_adapter.build_observation
+    - controller.propose_action
+    - safety_filter.evaluate_action
+    - action_adapter.build_applied_action
+    - simulator_adapter.apply_action
+    - simulator_adapter.advance
+    - telemetry.record_step
+  control_interval:
+    value: null
+    unit: null
+    status: UNRESOLVED
+    rule: Architecture ordering is frozen independently of numerical control cadence.
+
+components:
+  - id: simulator_adapter
+    responsibility:
+      - isolate OPM or other reference-simulator details from controller and safety code
+      - expose only explicitly mapped simulator quantities
+      - apply only validated applied_action records
+      - advance the simulator and return an explicit outcome
+    authority:
+      may:
+        - read configured simulator outputs
+        - translate canonical applied actions into simulator-specific controls
+        - advance simulator execution
+      may_not:
+        - choose controller actions
+        - bypass safety disposition
+        - reinterpret benchmark values as physical limits
+    owns_state:
+      - simulator_session_state
+      - simulator_step_identity
+    inputs:
+      - applied_action
+    outputs:
+      - simulator_state
+      - simulator_outcome
+
+  - id: observation_adapter
+    responsibility:
+      - map simulator_state into the candidate controller observation contract
+      - enforce identity, validity, missing-value, unit, and visibility semantics
+      - prevent accidental full-state leakage
+    authority:
+      may:
+        - select only explicitly configured observable quantities
+        - reject invalid required observation inputs
+      may_not:
+        - expose a simulator quantity merely because it exists
+        - invent missing reservoir values
+        - silently normalize without recorded transformation semantics
+    owns_state: []
+    inputs:
+      - simulator_state
+    outputs:
+      - observation
+
+  - id: controller
+    responsibility:
+      - consume a valid observation
+      - maintain controller-specific memory when applicable
+      - produce a proposed_action
+    authority:
+      may:
+        - propose actions inside its declared candidate action schema
+      may_not:
+        - directly command the simulator
+        - declare an action physically safe
+        - overwrite applied_action
+    owns_state:
+      - controller_memory
+      - controller_policy_state
+    inputs:
+      - observation
+    outputs:
+      - proposed_action
+
+  - id: safety_filter
+    responsibility:
+      - evaluate proposed_action against the encoded safety model and constraint registry
+      - produce a safety disposition
+      - produce or authorize an applied_action only when the disposition permits it
+    authority:
+      may:
+        - accept a proposed action under encoded constraints
+        - modify a proposed action under encoded constraints
+        - reject or withhold an action
+      may_not:
+        - claim real-field physical safety from encoded feasibility alone
+        - silently invent missing thresholds
+        - bypass unresolved required safety information
+    owns_state:
+      - safety_model_state
+      - safety_evaluation_state
+    inputs:
+      - observation
+      - proposed_action
+    outputs:
+      - safety_decision
+
+  - id: action_adapter
+    responsibility:
+      - construct the canonical applied_action from an explicit safety_decision
+      - preserve proposed-versus-applied lineage
+      - validate simulator-bound action structure
+    authority:
+      may:
+        - perform documented representation conversion
+      may_not:
+        - optimize or independently alter action intent
+        - apply raw controller output
+    owns_state: []
+    inputs:
+      - proposed_action
+      - safety_decision
+    outputs:
+      - applied_action
+
+  - id: telemetry
+    responsibility:
+      - record reconstructable step-level provenance
+      - preserve observations, proposals, safety dispositions, applied actions, outcomes, failures, and identities
+    authority:
+      may:
+        - observe and persist records
+      may_not:
+        - modify controller decisions
+        - authorize actions
+        - alter simulator state
+    owns_state:
+      - run_record
+      - step_record
+      - provenance_record
+    inputs:
+      - simulator_state
+      - observation
+      - proposed_action
+      - safety_decision
+      - applied_action
+      - simulator_outcome
+      - failure_event
+    outputs:
+      - telemetry_record
+
+contracts:
+  simulator_state:
+    producer: simulator_adapter
+    consumer:
+      - observation_adapter
+      - telemetry
+    required_metadata:
+      - run_id
+      - realization_id
+      - control_step
+      - source
+    validity:
+      - required values used downstream must be finite unless explicitly nullable
+      - simulator availability does not imply controller visibility
+
+  observation:
+    producer: observation_adapter
+    consumer:
+      - controller
+      - safety_filter
+      - telemetry
+    required_metadata:
+      - run_id
+      - realization_id
+      - control_step
+      - schema_version
+    semantics_source: configs/interfaces/CLOSED_LOOP_SEMANTICS.yaml
+    validity:
+      - candidate membership must be explicit
+      - units and quantity identity must remain traceable
+      - missing required values must trigger explicit failure handling
+
+  proposed_action:
+    producer: controller
+    consumer:
+      - safety_filter
+      - action_adapter
+      - telemetry
+    semantics_source: configs/interfaces/CLOSED_LOOP_SEMANTICS.yaml
+    validity:
+      - must conform to declared candidate action schema
+      - must be distinguishable from applied_action
+      - does not carry physical-safety authority
+
+  safety_decision:
+    producer: safety_filter
+    consumer:
+      - action_adapter
+      - telemetry
+    dispositions:
+      - ACCEPT
+      - MODIFY
+      - REJECT
+      - INSUFFICIENT_EVIDENCE
+      - NUMERICAL_FAILURE
+    required_metadata:
+      - disposition
+      - constraint_registry_version
+      - reason_code
+    claim_boundary: >
+      ACCEPT or MODIFY means acceptable under the encoded model and available
+      evidence for that evaluation; it is not a universal physical-safety claim.
+
+  applied_action:
+    producer: action_adapter
+    consumer:
+      - simulator_adapter
+      - telemetry
+    semantics_source: configs/interfaces/CLOSED_LOOP_SEMANTICS.yaml
+    validity:
+      - must reference the originating proposed_action
+      - must reference the safety_decision
+      - may exist only for an explicitly action-permitting safety disposition
+
+  simulator_outcome:
+    producer: simulator_adapter
+    consumer:
+      - telemetry
+    states:
+      - ADVANCED
+      - REJECTED_BY_SIMULATOR
+      - NUMERICAL_FAILURE
+      - OUTPUT_INCOMPLETE
+
+  failure_event:
+    producer: any_component
+    consumer:
+      - telemetry
+      - orchestrator
+    semantics_source: configs/architecture/FAILURE_SEMANTICS.yaml
+
+orchestrator:
+  responsibility:
+    - enforce control-cycle ordering
+    - stop downstream execution when a required stage fails
+    - dispatch explicit fallback behavior
+    - preserve step identity across components
+  authority:
+    may:
+      - invoke components in the frozen order
+      - halt, retry only where explicitly allowed, or terminate a run
+    may_not:
+      - synthesize missing domain data
+      - override safety rejection
+      - convert failure into success
+      - choose reservoir-control actions
+
+
+interface_requirements:
+  common:
+    timing:
+      - every step-scoped record carries control_step
+      - records participating in one control step must agree on run_id, realization_id, and control_step
+      - numerical control duration is supplied by explicit experiment configuration when required and is never inferred here
+    configuration:
+      - schema_version must be declared
+      - experiment-specific quantity membership is supplied by controlled configuration
+      - domain-sensitive configuration must reference canonical interface or constraint semantics
+    ownership:
+      - producer owns construction and validation of its output record
+      - consumer validates compatibility before using a received record
+      - orchestrator owns sequencing but not subsystem domain semantics
+    errors:
+      - malformed required records produce explicit failure events
+      - unsupported schema versions block execution
+      - missing required fields may not be silently defaulted
+    provenance:
+      - run_id
+      - realization_id
+      - control_step
+      - schema_version
+    compatibility:
+      rule: >
+        Producer and consumer must agree on contract name, supported schema
+        version, required identity fields, and required semantic references
+        before the record is consumed.
+      automated_check: scripts/validation/validate_architecture.py
+
+  simulator_adapter:
+    input: applied_action
+    output:
+      - simulator_state
+      - simulator_outcome
+    timing: one invocation at the simulator stages of each successful control cycle
+    configuration:
+      - simulator configuration
+      - verified control mapping
+      - requested output mapping
+    ownership: simulator-specific representation and execution
+    errors:
+      - SIMULATOR_CONTROL_REJECTED
+      - SIMULATOR_NUMERICAL_FAILURE
+      - SIMULATOR_OUTPUT_INCOMPLETE
+
+  observation_adapter:
+    input: simulator_state
+    output: observation
+    timing: after simulator state is available and before controller proposal
+    configuration:
+      - explicit observation membership
+      - semantic mapping
+      - documented transformations
+    ownership: simulator-state to controller-observation transformation
+    errors:
+      - REQUIRED_OBSERVATION_MISSING
+      - OBSERVATION_NONFINITE
+      - OBSERVATION_OUT_OF_DECLARED_ENVELOPE
+      - OBSERVATION_SEMANTICS_UNRESOLVED
+
+  controller:
+    input: observation
+    output: proposed_action
+    timing: after observation validation and before safety evaluation
+    configuration:
+      - policy identity
+      - policy version
+      - action schema
+    ownership: proposal generation and controller-specific memory
+    errors:
+      - CONTROLLER_OUTPUT_MALFORMED
+      - CONTROLLER_NUMERICAL_FAILURE
+
+  safety_filter:
+    input:
+      - observation
+      - proposed_action
+    output: safety_decision
+    timing: after proposal and before applied-action construction
+    configuration:
+      - constraint registry version
+      - safety model identity
+      - safety model configuration
+    ownership: encoded safety evaluation
+    errors:
+      - SAFETY_INPUT_INSUFFICIENT
+      - SAFETY_OPTIMIZATION_INFEASIBLE
+      - SAFETY_NUMERICAL_FAILURE
+
+  action_adapter:
+    input:
+      - proposed_action
+      - safety_decision
+    output: applied_action
+    timing: only after an action-permitting safety disposition
+    configuration:
+      - canonical action schema
+      - verified simulator mapping
+    ownership: proposal-to-applied-action lineage and representation conversion
+    errors:
+      - APPLIED_ACTION_INVALID
+
+  telemetry:
+    input:
+      - simulator_state
+      - observation
+      - proposed_action
+      - safety_decision
+      - applied_action
+      - simulator_outcome
+      - failure_event
+    output: telemetry_record
+    timing: records each available stage artifact under the same step identity
+    configuration:
+      - telemetry schema version
+      - run manifest identity
+      - persistence target
+    ownership: persisted evidence and provenance
+    errors:
+      - REQUIRED_PROVENANCE_WRITE_FAILED
+
+
+state_ownership:
+  simulator_physical_state: simulator_adapter
+  observation_transformation_state: observation_adapter
+  controller_memory: controller
+  safety_model_state: safety_filter
+  action_lineage: action_adapter
+  experiment_and_step_provenance: telemetry
+  cycle_progression: orchestrator
+
+unresolved_architecture_inputs:
+  - final controller observation membership
+  - final controller action membership
+  - numerical control interval
+  - exact OPM summary/vector mapping
+  - exact simulator control-keyword mapping
+  - numerical action bounds
+  - numerical reservoir safety thresholds
+  - final reduced-order safety-model formulation
+  - final controller algorithm and memory representation
+
+traceability:
+  requirements:
+    - AUR-REQ-002
+    - AUR-REQ-008
+    - AUR-REQ-009
+    - AUR-REQ-010
+    - AUR-REQ-011
+    - AUR-REQ-017
+    - AUR-REQ-018
+    - AUR-REQ-021
+  issues:
+    - 7
+    - 8
+    - 9

@@ -1,0 +1,261 @@
+schema_version: 1
+registry_status: PROVISIONAL_ARCHITECTURE_FREEZE
+
+principles:
+  - Failures are explicit records, never silently converted into nominal values.
+  - Safety rejection is a valid system outcome, not a software failure.
+  - Unknown domain meaning remains unknown.
+  - No fallback may bypass the safety authority boundary.
+  - No fallback may invent reservoir measurements, limits, or control targets.
+  - Retry is allowed only for failures classified as retryable.
+  - Every fallback must be reconstructable from telemetry.
+
+severity:
+  INFO: no loss of required function
+  WARNING: degraded but valid execution with explicit qualification
+  STEP_BLOCKING: current control step may not apply a new action
+  RUN_BLOCKING: run may not continue safely or reproducibly
+
+fallback_actions:
+  HOLD_NO_NEW_ACTION:
+    meaning: Do not apply a newly proposed control action for the failed step.
+    claim_boundary: >
+      This is a software fallback semantic, not a claim that the reservoir
+      remains physically safe under unchanged controls.
+  REJECT_PROPOSAL:
+    meaning: Proposed action is not authorized for simulator application.
+  TERMINATE_RUN:
+    meaning: Stop the experiment/run and preserve failure evidence.
+  RETRY_SAME_OPERATION:
+    meaning: Retry only the same deterministic operation when explicitly classified retryable.
+  CONTINUE_WITH_WARNING:
+    meaning: Continue only when the affected information is non-required for the current operation and qualification is recorded.
+
+failure_classes:
+  - id: FAIL-OBS-001
+    name: REQUIRED_OBSERVATION_MISSING
+    component: observation_adapter
+    severity: STEP_BLOCKING
+    retryable: false
+    fallback: HOLD_NO_NEW_ACTION
+    rule: A required controller or safety input is absent and has no explicitly valid missing-value semantic.
+
+  - id: FAIL-OBS-002
+    name: OBSERVATION_NONFINITE
+    component: observation_adapter
+    severity: STEP_BLOCKING
+    retryable: false
+    fallback: HOLD_NO_NEW_ACTION
+    rule: A required numeric observation contains NaN or infinity.
+
+
+  - id: FAIL-OBS-004
+    name: OBSERVATION_OUT_OF_DECLARED_ENVELOPE
+    component: observation_adapter
+    severity: STEP_BLOCKING
+    retryable: false
+    fallback: HOLD_NO_NEW_ACTION
+    rule: >
+      A required observation is outside an explicitly declared and
+      provenance-backed admissible experiment or interface envelope.
+    claim_boundary: >
+      Out-of-envelope means unsupported for the declared experiment or
+      interface scope; it does not automatically mean physically unsafe.
+    robustness_scenario: ROB-OBS-OUT-OF-ENVELOPE
+
+
+  - id: FAIL-OBS-003
+    name: OBSERVATION_SEMANTICS_UNRESOLVED
+    component: observation_adapter
+    severity: STEP_BLOCKING
+    retryable: false
+    fallback: HOLD_NO_NEW_ACTION
+    rule: A required quantity cannot be mapped to a supported quantity, unit, sign, identity, or visibility semantic.
+
+  - id: FAIL-CTL-001
+    name: CONTROLLER_OUTPUT_MALFORMED
+    component: controller
+    severity: STEP_BLOCKING
+    retryable: false
+    fallback: REJECT_PROPOSAL
+    rule: Controller output violates the declared proposed_action contract.
+
+  - id: FAIL-CTL-002
+    name: CONTROLLER_NUMERICAL_FAILURE
+    component: controller
+    severity: STEP_BLOCKING
+    retryable: false
+    fallback: REJECT_PROPOSAL
+    rule: Controller computation fails or returns non-finite required action values.
+
+  - id: FAIL-SAFE-001
+    name: SAFETY_INPUT_INSUFFICIENT
+    component: safety_filter
+    severity: STEP_BLOCKING
+    retryable: false
+    fallback: REJECT_PROPOSAL
+    rule: Required safety evidence, state, constraint meaning, or threshold is unavailable.
+
+  - id: FAIL-SAFE-002
+    name: SAFETY_OPTIMIZATION_INFEASIBLE
+    component: safety_filter
+    severity: STEP_BLOCKING
+    retryable: false
+    fallback: REJECT_PROPOSAL
+    rule: No action satisfying the encoded optimization problem is returned.
+    claim_boundary: Infeasibility is relative to the encoded model and constraints.
+
+  - id: FAIL-SAFE-003
+    name: SAFETY_NUMERICAL_FAILURE
+    component: safety_filter
+    severity: STEP_BLOCKING
+    retryable: false
+    fallback: REJECT_PROPOSAL
+    rule: Safety computation fails numerically or returns an invalid result.
+
+  - id: FAIL-ACT-001
+    name: APPLIED_ACTION_INVALID
+    component: action_adapter
+    severity: STEP_BLOCKING
+    retryable: false
+    fallback: HOLD_NO_NEW_ACTION
+    rule: Simulator-bound action cannot be validated against the applied_action contract.
+
+  - id: FAIL-SIM-001
+    name: SIMULATOR_CONTROL_REJECTED
+    component: simulator_adapter
+    severity: STEP_BLOCKING
+    retryable: false
+    fallback: TERMINATE_RUN
+    rule: Simulator rejects the mapped control request.
+
+  - id: FAIL-SIM-002
+    name: SIMULATOR_NUMERICAL_FAILURE
+    component: simulator_adapter
+    severity: RUN_BLOCKING
+    retryable: false
+    fallback: TERMINATE_RUN
+    rule: Simulator fails to advance to a valid next state.
+
+  - id: FAIL-SIM-003
+    name: SIMULATOR_OUTPUT_INCOMPLETE
+    component: simulator_adapter
+    severity: STEP_BLOCKING
+    retryable: false
+    fallback: TERMINATE_RUN
+    rule: Required configured simulator output is unavailable after advance.
+
+  - id: FAIL-TEL-001
+    name: REQUIRED_PROVENANCE_WRITE_FAILED
+    component: telemetry
+    severity: RUN_BLOCKING
+    retryable: true
+    fallback: RETRY_SAME_OPERATION
+    retry_exhausted_fallback: TERMINATE_RUN
+    rule: Required evidence for reconstructing a control step cannot be persisted.
+
+  - id: FAIL-ID-001
+    name: STEP_IDENTITY_MISMATCH
+    component: orchestrator
+    severity: RUN_BLOCKING
+    retryable: false
+    fallback: TERMINATE_RUN
+    rule: run_id, realization_id, or control_step identity is inconsistent across required records.
+
+  - id: FAIL-CONTRACT-001
+    name: UNSUPPORTED_SCHEMA_VERSION
+    component: orchestrator
+    severity: RUN_BLOCKING
+    retryable: false
+    fallback: TERMINATE_RUN
+    rule: A component presents a contract version not supported by the current run.
+
+safety_rejection:
+  is_failure: false
+  disposition: REJECT
+  required_behavior:
+    - do not construct an action as if ACCEPT occurred
+    - do not send the raw proposed action to the simulator
+    - record reason and encoded constraint context
+  claim_boundary: Rejection does not by itself prove the proposed action would have been physically unsafe in the real field.
+
+recovery_boundary:
+  automatic_recovery_may_not:
+    - bypass safety_filter
+    - replace missing required observations with zero
+    - reuse stale observations without an explicit supported stale-data policy
+    - invent action bounds
+    - invent pressure limits
+    - reinterpret benchmark controls as safe fallback controls
+    - convert simulator failure into a successful experiment step
+
+
+robustness_traceability:
+  purpose: >
+    Provide stable scenario identifiers that later robustness tests can
+    implement without changing the failure semantics frozen here.
+  scenarios:
+    - id: ROB-OBS-MISSING
+      failure: FAIL-OBS-001
+      stimulus: remove a required observation field
+      expected: HOLD_NO_NEW_ACTION
+    - id: ROB-OBS-NONFINITE
+      failure: FAIL-OBS-002
+      stimulus: inject NaN or infinity into a required observation
+      expected: HOLD_NO_NEW_ACTION
+    - id: ROB-OBS-OUT-OF-ENVELOPE
+      failure: FAIL-OBS-004
+      stimulus: provide a required value outside an explicitly configured supported envelope
+      expected: HOLD_NO_NEW_ACTION
+    - id: ROB-OBS-SEMANTICS
+      failure: FAIL-OBS-003
+      stimulus: remove required quantity, unit, sign, identity, or visibility semantics
+      expected: HOLD_NO_NEW_ACTION
+    - id: ROB-CONTROLLER-MALFORMED
+      failure: FAIL-CTL-001
+      stimulus: return a proposal that violates the action contract
+      expected: REJECT_PROPOSAL
+    - id: ROB-CONTROLLER-NUMERICAL
+      failure: FAIL-CTL-002
+      stimulus: force non-finite controller output or controller computation failure
+      expected: REJECT_PROPOSAL
+    - id: ROB-SAFETY-INSUFFICIENT
+      failure: FAIL-SAFE-001
+      stimulus: remove required safety evidence or constraint meaning
+      expected: REJECT_PROPOSAL
+    - id: ROB-SAFETY-INFEASIBLE
+      failure: FAIL-SAFE-002
+      stimulus: construct an encoded optimization case with no returned feasible action
+      expected: REJECT_PROPOSAL
+    - id: ROB-SAFETY-NUMERICAL
+      failure: FAIL-SAFE-003
+      stimulus: force invalid or failed safety computation
+      expected: REJECT_PROPOSAL
+    - id: ROB-ACTION-INVALID
+      failure: FAIL-ACT-001
+      stimulus: corrupt simulator-bound applied-action structure
+      expected: HOLD_NO_NEW_ACTION
+    - id: ROB-SIM-CONTROL
+      failure: FAIL-SIM-001
+      stimulus: make simulator reject mapped control
+      expected: TERMINATE_RUN
+    - id: ROB-SIM-NUMERICAL
+      failure: FAIL-SIM-002
+      stimulus: force simulator advance failure
+      expected: TERMINATE_RUN
+    - id: ROB-SIM-OUTPUT
+      failure: FAIL-SIM-003
+      stimulus: omit a required configured simulator output
+      expected: TERMINATE_RUN
+    - id: ROB-TELEMETRY-WRITE
+      failure: FAIL-TEL-001
+      stimulus: force required provenance persistence failure
+      expected: RETRY_SAME_OPERATION_THEN_TERMINATE_RUN
+    - id: ROB-IDENTITY
+      failure: FAIL-ID-001
+      stimulus: mismatch run, realization, or control-step identity
+      expected: TERMINATE_RUN
+    - id: ROB-SCHEMA
+      failure: FAIL-CONTRACT-001
+      stimulus: provide an unsupported contract schema version
+      expected: TERMINATE_RUN
