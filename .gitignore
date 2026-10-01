@@ -57,3 +57,11 @@ experiments/results/*
 *.out
 *.toc
 *.synctex.gz
+# AURORA external Egg / generated simulation products
+data/egg/local/
+runs/
+*.EGRID
+*.INIT
+*.SMSPEC
+*.UNSMRY
+*.UNRST

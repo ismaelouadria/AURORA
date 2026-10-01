@@ -1,0 +1,137 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+SRC = ROOT / "src"
+sys.path.insert(0, str(SRC))
+
+from aurora.closed_loop import run_smoke
+from aurora.simulation.opm import (
+    detect_opm_environment,
+    inspect_reference_outputs,
+)
+
+
+def run_script(relative: str, args: list[str]) -> int:
+    command = [sys.executable, str(ROOT / relative), *args]
+    return subprocess.call(command)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        prog="./aurora",
+        description="AURORA guided engineering command surface.",
+    )
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    doctor = sub.add_parser("doctor")
+    doctor.add_argument("--json", action="store_true")
+
+    egg = sub.add_parser("egg")
+    egg_sub = egg.add_subparsers(dest="egg_command", required=True)
+    egg_acquire = egg_sub.add_parser("acquire")
+    egg_acquire.add_argument("--archive")
+    egg_acquire.add_argument("--destination", default="data/egg/local")
+    egg_verify = egg_sub.add_parser("verify")
+    egg_verify.add_argument("--root", default="data/egg/local")
+
+    opm = sub.add_parser("opm")
+    opm_sub = opm.add_subparsers(dest="opm_command", required=True)
+    opm_run = opm_sub.add_parser("run-reference")
+    opm_run.add_argument("--deck-root", required=True)
+    opm_run.add_argument("--output-dir", default="runs/opm-reference")
+    opm_run.add_argument("--engine", choices=["auto", "native", "docker"], default="auto")
+    opm_inspect = opm_sub.add_parser("inspect")
+    opm_inspect.add_argument("--output-dir", required=True)
+
+    extract = sub.add_parser("extract-opm")
+    extract.add_argument("--smspec", required=True)
+    extract.add_argument("--output", required=True)
+    extract.add_argument("--vectors", nargs="+", required=True)
+
+    smoke = sub.add_parser("smoke")
+    smoke.add_argument("--steps", type=int, default=4)
+    smoke.add_argument("--seed", type=int, default=7)
+    smoke.add_argument("--output-dir", default="runs/smoke")
+
+    validate = sub.add_parser("validate")
+
+    args = parser.parse_args()
+
+    if args.command == "doctor":
+        report = detect_opm_environment(ROOT)
+        if args.json:
+            print(json.dumps(report, indent=2))
+        else:
+            for key, value in report.items():
+                print(f"{key}: {value}")
+        return 0
+
+    if args.command == "egg":
+        if args.egg_command == "acquire":
+            forwarded = ["--destination", args.destination]
+            if args.archive:
+                forwarded += ["--archive", args.archive]
+            return run_script("scripts/egg/acquire_egg.py", forwarded)
+
+        return run_script(
+            "scripts/egg/acquire_egg.py",
+            ["--verify-only", "--destination", args.root],
+        )
+
+    if args.command == "opm":
+        if args.opm_command == "run-reference":
+            return run_script(
+                "scripts/opm/run_reference.py",
+                [
+                    "--deck-root", args.deck_root,
+                    "--output-dir", args.output_dir,
+                    "--engine", args.engine,
+                ],
+            )
+
+        print(
+            json.dumps(
+                inspect_reference_outputs(Path(args.output_dir)),
+                indent=2,
+            )
+        )
+        return 0
+
+    if args.command == "extract-opm":
+        return run_script(
+            "scripts/opm/extract_summary.py",
+            [
+                "--smspec", args.smspec,
+                "--output", args.output,
+                "--vectors", *args.vectors,
+            ],
+        )
+
+    if args.command == "smoke":
+        result = run_smoke(
+            root=ROOT,
+            output_dir=Path(args.output_dir),
+            steps=args.steps,
+            seed=args.seed,
+        )
+        print(json.dumps(result, indent=2))
+        return 0
+
+    if args.command == "validate":
+        return run_script(
+            "scripts/validation/validate_runtime_foundation.py",
+            [],
+        )
+
+    return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

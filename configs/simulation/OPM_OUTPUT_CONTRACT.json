@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "id": "opm-output-contract-v1",
+  "status": "PROVISIONAL",
+  "source": {
+    "format": "Eclipse/OPM summary and restart outputs",
+    "summary_metadata": "SMSPEC",
+    "summary_values": "UNSMRY",
+    "restart_state": "UNRST"
+  },
+  "candidate_summary_families": [
+    {
+      "family": "field_phase_rates",
+      "examples_previously_verified": [
+        "FOPR",
+        "FWPR",
+        "FWIR"
+      ],
+      "consumer_authority": "telemetry/reference-analysis",
+      "controller_observation_authority": "UNRESOLVED"
+    },
+    {
+      "family": "field_cumulative_phase_volumes",
+      "examples_previously_verified": [
+        "FOPT",
+        "FWPT",
+        "FWIT"
+      ],
+      "consumer_authority": "telemetry/reference-analysis",
+      "controller_observation_authority": "UNRESOLVED"
+    },
+    {
+      "family": "well_phase_rates",
+      "examples_previously_verified": [
+        "WOPR",
+        "WWPR",
+        "WWIR"
+      ],
+      "identity": "well_id required",
+      "consumer_authority": "telemetry/reference-analysis",
+      "controller_observation_authority": "UNRESOLVED"
+    }
+  ],
+  "required_preservation": [
+    "source_run_id",
+    "source_configuration",
+    "simulator_version",
+    "vector_identity",
+    "well_identity_when_applicable",
+    "unit_from_source_metadata",
+    "simulator_time_or_report_identity"
+  ],
+  "missing_policy": "fail_explicitly_for_required_configured_output",
+  "invalid_policy": "do_not_silently_coerce",
+  "claim_boundaries": [
+    "Requested vectors are not proof of generated vectors.",
+    "Generated vectors are not automatically controller observations.",
+    "Vector names alone are insufficient evidence for units.",
+    "Restart availability is not equivalent to controller observability."
+  ]
+}

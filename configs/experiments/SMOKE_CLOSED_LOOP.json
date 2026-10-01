@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "closed-loop-smoke-v1",
+  "purpose": "software integration proof; not reservoir validation",
+  "environment": "DeterministicToyEnvironment",
+  "controller": "FixedSmokeController",
+  "safety": "StructuralSafetyFilter",
+  "steps": 4,
+  "seed": 7,
+  "control_interval": {
+    "reservoir_semantics": "UNRESOLVED",
+    "smoke_semantics": "one deterministic integration step"
+  }
+}

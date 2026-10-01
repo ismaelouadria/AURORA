@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AURORA control-step telemetry",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "recorded_at_utc",
+    "run_id",
+    "commit",
+    "seed",
+    "reference_id",
+    "configuration",
+    "event_type",
+    "step",
+    "observation",
+    "proposed_action",
+    "safety_decision",
+    "applied_action",
+    "simulator_outcome",
+    "failure"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "commit": {
+      "type": "string"
+    },
+    "seed": {
+      "type": "integer"
+    },
+    "reference_id": {
+      "type": "string"
+    },
+    "event_type": {
+      "const": "control_step"
+    },
+    "step": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "observation": {
+      "type": "object"
+    },
+    "proposed_action": {
+      "type": "object"
+    },
+    "safety_decision": {
+      "type": "object"
+    },
+    "applied_action": {
+      "type": "object"
+    },
+    "simulator_outcome": {
+      "type": "object"
+    },
+    "failure": {
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": true
+}
