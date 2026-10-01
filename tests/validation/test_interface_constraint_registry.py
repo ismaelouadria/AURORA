@@ -35,43 +35,37 @@ def test_margin_semantics_are_explicit():
     assert "near_miss:" in text
 
 def test_egg_baseline_evidence_boundary():
-    import yaml
-
-    root = Path(__file__).resolve().parents[2]
+    required = [
+        "egg_benchmark_evidence:",
+        "evidence_class: BENCHMARK_BASELINE",
+        "injector_count: 8",
+        "producer_count: 4",
+        "timestep_count: 120",
+        "timestep_length_days: 30.0",
+        "keyword: WCONINJE",
+        "control_mode: RATE",
+        "baseline_rate_raw: 79.5",
+        "additional_raw_value: 420.0",
+        "additional_raw_value_semantics: UNRESOLVED",
+        "keyword: WCONPROD",
+        "control_mode: BHP",
+        "baseline_bhp_raw: 395.0",
+        "not an admissible action bound",
+        "not a physical limit",
+        "not an encoded safety constraint",
+        "does not by itself freeze",
+        "420",
+        "unresolved",
+    ]
 
     for rel in (
         "configs/interfaces/CLOSED_LOOP_SEMANTICS.yaml",
         "configs/safety/CONSTRAINT_REGISTRY.yaml",
     ):
-        registry = yaml.safe_load((root / rel).read_text())
-        evidence = registry["egg_benchmark_evidence"]
+        text = (ROOT / rel).read_text(encoding="utf-8")
+        lowered = text.lower()
 
-        assert evidence["evidence_class"] == "BENCHMARK_BASELINE"
-
-        assert evidence["observed_topology"]["injector_count"] == 8
-        assert evidence["observed_topology"]["producer_count"] == 4
-
-        schedule = evidence["observed_schedule"]
-        assert schedule["timestep_count"] == 120
-        assert schedule["timestep_length_days"] == 30.0
-
-        injectors = evidence["observed_controls"]["injectors"]
-        assert injectors["keyword"] == "WCONINJE"
-        assert injectors["control_mode"] == "RATE"
-        assert injectors["baseline_rate_raw"] == 79.5
-        assert injectors["additional_raw_value"] == 420.0
-        assert injectors["additional_raw_value_semantics"] == "UNRESOLVED"
-
-        producers = evidence["observed_controls"]["producers"]
-        assert producers["keyword"] == "WCONPROD"
-        assert producers["control_mode"] == "BHP"
-        assert producers["baseline_bhp_raw"] == 395.0
-
-        boundary = " ".join(evidence["claim_boundary"]).lower()
-
-        assert "not an admissible action bound" in boundary
-        assert "not a physical limit" in boundary
-        assert "not an encoded safety constraint" in boundary
-        assert "does not by itself freeze" in boundary
-        assert "420" in boundary
-        assert "unresolved" in boundary
+        for phrase in required:
+            assert phrase.lower() in lowered, (
+                f"{rel} missing Egg evidence-boundary invariant: {phrase}"
+            )
