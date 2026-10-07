@@ -1,0 +1,947 @@
+% =====================================================================
+%  AURORA -- SYSC 4907 Project Proposal (condensed version)
+%  Build:  latexmk -pdf main_short.tex      (pdflatex + bibtex)
+%  Needs, in the same folder: team.tex, references.bib, f3_field_rates.dat
+%  (the .dat is also looked for in figures/ and data/).
+% =====================================================================
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[margin=1in,headheight=22pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[scaled=0.92]{helvet}
+\usepackage{microtype}
+\usepackage[english]{babel}
+\usepackage{setspace}
+\setstretch{1.05}
+\setlength{\parskip}{0.4em}
+\setlength{\parindent}{0pt}
+
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage[per-mode=symbol]{siunitx}
+\sisetup{group-separator={,},group-minimum-digits=4}
+\DeclareSIUnit{\bar}{bar}
+\DeclareSIUnit{\day}{d}
+\usepackage{booktabs,tabularx,array}
+\usepackage[table]{xcolor}
+\renewcommand{\arraystretch}{1.12}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{float}
+\usepackage[section]{placeins}
+\usepackage[font=small,labelfont={bf,sf},format=hang]{caption}
+\setlength{\textfloatsep}{10pt plus 2pt minus 2pt}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.8}
+\setcounter{topnumber}{3}
+\setcounter{totalnumber}{5}
+\setlength{\intextsep}{8pt plus 2pt minus 2pt}
+
+\definecolor{aurNavy}{HTML}{14213D}
+\definecolor{aurBlue}{HTML}{2A6F97}
+\definecolor{aurTeal}{HTML}{2A9D8F}
+\definecolor{aurOrange}{HTML}{F4A261}
+\definecolor{aurRed}{HTML}{C8553D}
+\definecolor{aurGrey}{HTML}{6C757D}
+\definecolor{aurLight}{HTML}{EEF3F7}
+\definecolor{aurPurple}{HTML}{6D597A}
+\colorlet{cIsmael}{aurBlue}
+\colorlet{cAziz}{aurTeal}
+\colorlet{cAbdu}{aurPurple}
+\colorlet{cMahdi}{aurOrange}
+\colorlet{cTimur}{aurRed}
+
+\usepackage[explicit]{titlesec}
+\titleformat{\section}{\sffamily\Large\bfseries\color{aurNavy}}
+  {\thesection}{0.8em}{#1}[{\color{aurBlue}\titlerule[0.8pt]}]
+\titleformat{\subsection}{\sffamily\large\bfseries\color{aurNavy}}
+  {\thesubsection}{0.7em}{#1}
+\titlespacing*{\section}{0pt}{1.1em}{0.6em}
+\titlespacing*{\subsection}{0pt}{0.8em}{0.3em}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\sffamily\footnotesize\color{aurGrey}AURORA \textbullet{} Project Proposal}
+\fancyhead[R]{\sffamily\footnotesize\color{aurGrey}SYSC 4907}
+\fancyfoot[C]{\sffamily\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\usepackage{enumitem}
+\setlist{itemsep=0.1em,topsep=0.2em,parsep=0pt}
+\usepackage[most]{tcolorbox}
+\newtcolorbox{keybox}[1][]{enhanced,colback=aurLight,colframe=aurBlue,
+  boxrule=0pt,leftrule=3pt,arc=0pt,left=8pt,right=8pt,top=4pt,bottom=4pt,
+  fonttitle=\sffamily\bfseries\color{aurNavy},coltitle=aurNavy,
+  attach title to upper={\ },#1}
+
+\newcommand{\tbc}[1]{\textcolor{aurOrange!85!black}{[#1]}}
+\newcommand{\aur}{\textsc{Aurora}}
+
+\usepackage[hidelinks]{hyperref}
+\hypersetup{colorlinks=true,linkcolor=aurNavy,citecolor=aurBlue,urlcolor=aurBlue,
+  pdftitle={AURORA -- Project Proposal},pdfauthor={AURORA Team},
+  pdfsubject={SYSC 4907 Project Proposal}}
+\usepackage[capitalise,noabbrev]{cleveref}
+\usepackage{url}
+
+\input{team}
+
+% Locate the F3 rates file wherever the repository keeps it.
+\newcommand{\FthreeData}{f3_field_rates.dat}
+\IfFileExists{figures/f3_field_rates.dat}{\renewcommand{\FthreeData}{figures/f3_field_rates.dat}}{}
+\IfFileExists{data/f3_field_rates.dat}{\renewcommand{\FthreeData}{data/f3_field_rates.dat}}{}
+
+\begin{document}
+
+
+% ---------------------------------------------------------------- Title
+\begin{titlepage}
+\centering
+\vspace*{0.2cm}
+{\sffamily\bfseries\fontsize{40}{44}\selectfont\color{aurNavy}AURORA\par}
+\vspace{0.3cm}
+{\sffamily\Large\color{aurBlue}Autonomous Upstream Reservoir Optimization and Risk-Aware Agent\par}
+\vspace{0.6cm}
+{\sffamily\LARGE\bfseries Project Proposal\par}
+\vspace{0.3cm}
+{\large Keeping an AI controller for an oil reservoir within its limits\\
+when the model it relies on is wrong\par}
+\vspace{0.7cm}
+\begin{tabularx}{0.9\textwidth}{@{}P{2.6cm}L@{}}
+\textbf{Course} & \CourseCode{} --- \CourseName, \Department, \University\\
+\textbf{Supervisors} & \SupervisorA{} and \SupervisorB\\
+\textbf{Submitted} & \SubmissionDate\\
+\textbf{Repository} & \url{https://github.com/ismaelouadria/AURORA}\\
+\end{tabularx}
+\vspace{0.6cm}
+
+\small
+\begin{tabularx}{\textwidth}{@{}P{3.7cm}P{1.8cm}P{3.0cm}L@{}}
+\toprule
+\textbf{Name} & \textbf{Student no.} & \textbf{Program} & \textbf{Main responsibility}\\
+\midrule
+\Ismael & \IsmaelID & \IsmaelProg & Fast model, safety check, safety margin, overall design\\
+\Aziz & \AzizID & \AzizProg & Detailed reservoir simulation (OPM Flow + Egg)\\
+\Abdu & \AbduID & \AbduProg & AI controller (reinforcement learning)\\
+\Mahdi & \MahdiID & \MahdiProg & Experiments, logging, statistics, dashboard\\
+\Timur & \TimurID & \TimurProg & Fault testing and failure handling\\
+\bottomrule
+\end{tabularx}
+\normalsize
+\vfill
+\raggedright
+\begin{keybox}[title=Summary.]
+An AI controller decides how much water to pump into a simulated oil reservoir. Before each
+decision is applied, a safety check uses a fast, simplified model to predict whether it
+would push a well's pressure past its limit. If the model is wrong, a decision that looks safe can still break the limit. \aur{} measures
+how wrong the fast model is by comparing it with a detailed simulator, turns that error
+into a safety margin, and then tests, on reservoirs the system has never seen, whether the
+margin reduces limit violations without giving up much oil production.
+\end{keybox}
+\end{titlepage}
+
+% ============================================================== 1
+\section{Introduction}
+
+Oil is held in the tiny pores of underground rock. As oil is pumped out, the pressure in
+the reservoir drops and production slows. \emph{Waterflooding} is a common way to keep
+production going: water is pumped in through \emph{injector} wells, which keeps the
+pressure up and pushes oil towards \emph{producer} wells. Someone has to decide, every few
+weeks or months, how much water each injector should get. That is a control problem.
+
+Three things make it hard:
+\begin{itemize}
+\item \textbf{Limited view.} Nobody can see what is happening underground. The only
+measurements come from the wells: flow rates, the fraction of produced liquid that is water
+(the \emph{water cut}), and the pressure at the bottom of each well (\emph{bottom-hole
+pressure}, BHP).
+\item \textbf{Delayed effects.} Pumping more water today can raise production now but cause
+water to reach the producers sooner, which lowers the total oil recovered.
+\item \textbf{Slow or inaccurate models.} A detailed simulator is accurate but too slow to
+run for every decision being considered. A fast simplified model is quick but wrong by an
+unknown amount.
+\end{itemize}
+
+Reinforcement learning (RL), where a program learns good decisions by trial and error in a
+simulator, has been used for waterflooding several times
+\cite{hourfar2019rl,ma2019drl,zhang2022drl}. Giving the controller a memory of past
+measurements is the usual way to deal with the limited view
+\cite{kaelbling1998pomdp,hausknecht2015drqn}. However, an RL controller only tries to
+maximize its score. Nothing guarantees that each decision respects operating limits
+\cite{garcia2015survey}. The usual fix is a \emph{safety filter}: a check placed between
+the controller and the reservoir. It predicts the effect of each proposed decision and, if
+a limit would be broken, replaces the decision with the closest safe one
+\cite{wabersich2021filter}.
+
+\begin{keybox}[title=The problem this project addresses.]
+A safety filter can only catch what its model predicts. Suppose the pressure limit for an
+injector is \SI{420}{\bar} and the fast model predicts \SI{414}{\bar} for a proposed
+decision. The filter lets it through. If the detailed simulator then gives \SI{423}{\bar},
+the limit is broken even though the filter worked as designed. The fast model was wrong,
+and nothing in the system allowed for that.
+\end{keybox}
+
+\aur{} treats the error of the fast model as part of the safety problem. It measures that
+error against the detailed simulator, focusing on the cases where the fast model predicts
+too low, and adds a safety margin of a size the measurements justify.
+
+\textbf{Scope.} This is a software and computer engineering project that uses an oil
+reservoir as its application. The work is software design, connecting to an existing
+simulator, machine learning, optimization, statistics, testing, failure handling and
+visualization. Everything is tested in simulation, using a published test reservoir (the
+Egg model \cite{jansen2014egg}) in an open-source simulator (OPM Flow
+\cite{rasmussen2021opm}). We do not claim the system is ready for a real oil field.
+
+% ============================================================== 2
+\section{Objectives and Requirements}
+
+\subsection{Objectives}
+
+\textbf{Main objective.} Build and test a software system that (1) controls water injection
+in a simulated reservoir using an RL controller with memory, (2) protects a pressure limit
+with a safety filter based on a fast model, and (3) finds out whether adding a margin based
+on the fast model's measured error reduces limit violations on reservoirs the system has
+not seen before.
+
+Each supporting objective has one owner, so it is clear who is responsible for it
+(\cref{tab:objectives}).
+
+\begin{table}[!htbp]
+\caption{Supporting objectives, owners and how we show each one is done.}\label{tab:objectives}
+\small
+\begin{tabularx}{\textwidth}{@{}lLP{2.1cm}P{5.0cm}@{}}
+\toprule
+\textbf{ID} & \textbf{Objective} & \textbf{Owner} & \textbf{Shown by}\\
+\midrule
+O1 & Detailed simulation that our software can drive step by step: any Egg reservoir version running in OPM Flow & \AzizS & Runs from a fresh copy of the repository with one script; tests on the extracted data\\
+O2 & AI controller that sees only well measurements, in two forms: without memory (PPO) and with memory (recurrent PPO) & \AbduS & Saved settings and random seeds; a test proving no hidden data reaches the controller\\
+O3 & Fast model fitted to each reservoir version, and a safety filter that changes unsafe decisions as little as possible & \IsmaelS & Report comparing the fast model with OPM; unit tests for the filter\\
+O4 & Measurement of the fast model's error and a safety margin built from it & \IsmaelS, \AzizS & Dataset of paired fast-model and OPM results; report on how well the margin covers the error\\
+O5 & Fault testing and a supervisor that falls back to a safe action when something fails & \TimurS & Library of fault scenarios; tests of the supervisor\\
+O6 & Logging, an experiment runner, statistics and a dashboard & \MahdiS & A result figure regenerated from its saved run record\\
+O7 & Test of the complete system on unseen reservoir versions & Team & Test plan fixed in advance; results with confidence intervals\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Functional and non-functional requirements}
+
+The repository lists 26 functional requirements, each with a priority, an owner and a way
+to check it. \Cref{tab:fr} summarizes them by subsystem, and \cref{tab:nfr} lists the
+non-functional requirements with measurable targets. Targets marked \emph{proposed} are
+fixed at the design review and changed afterwards only through a recorded decision.
+
+\begin{table}[!htbp]
+\caption{Functional requirements by subsystem.}\label{tab:fr}
+\small
+\begin{tabularx}{\textwidth}{@{}P{2.7cm}P{1.5cm}LP{1.6cm}@{}}
+\toprule
+\textbf{Subsystem} & \textbf{IDs} & \textbf{The system shall\ldots} & \textbf{Owner}\\
+\midrule
+Reservoir simulation & FR-01--05 & run any Egg reservoir version in OPM one step at a time, with injection rates set by our software; save flow rates and pressures in a fixed format; confirm the simulator applied the rates that were asked for; produce matching fast-model and OPM results for the same situation & \AzizS\\
+AI controller & FR-06--09 & give the controller only well measurements (checked automatically); train the controller with and without memory from saved settings; provide simple non-AI controllers for comparison & \AbduS\\
+Fast model and safety filter & FR-10--14 & fit the fast model; check and, if needed, correct every decision; report when no safe decision exists; compute the margin only from the reservoir versions set aside for that; run with no margin, a fixed margin or the measured margin & \IsmaelS\\
+Failure handling & FR-15--18 & create repeatable faults on demand; check every measurement before use; detect a component that stops responding and switch to a safe mode; log every fault and mode change & \TimurS\\
+Logging and experiments & FR-19--25 & log each stage of each step separately; save a record of every run; run batches and keep failed runs; compute results with confidence intervals; replay any run in a dashboard & \MahdiS\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[!htbp]
+\caption{Non-functional requirements.}\label{tab:nfr}
+\small
+\begin{tabularx}{\textwidth}{@{}P{2.4cm}L@{}}
+\toprule
+\textbf{Quality} & \textbf{Requirement and target}\\
+\midrule
+Reproducibility & A new team member can get a verified simulation running from a fresh copy of the repository by following the written steps. The same inputs always give the same decisions.\\
+Speed & \emph{Proposed:} one decision (controller, fast model and safety filter) takes under \SI{1}{\second} on a laptop; the filter alone under \SI{50}{\milli\second}.\\
+Testing & Unit tests cover at least 80\% of the code in the safety, margin, supervisor and logging packages.\\
+Fair testing & The reservoir versions kept for the final test are fixed in advance, and the software blocks any training or tuning job from reading them.\\
+Logging & Every decision step produces a complete log record; a missing field fails the run.\\
+Failure handling & Under every fault we test, no invalid or out-of-range decision reaches the simulator.\\
+Ease of use & A reviewer who has not seen the code can understand the dashboard's main view. This is checked in a rehearsal with someone outside the team.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Success criteria and how progress is measured}
+
+Success is judged in two ways. The \emph{engineering criteria} are about building a system
+that works and can be checked. We expect to meet all of them:
+\begin{itemize}
+\item[E1] A complete simulation runs from start to finish with no manual steps, and every step is logged.
+\item[E2] Re-running a saved run record reproduces the same decisions.
+\item[E3] The safety filter never breaks its own limit when a safe decision exists, and always reports when none exists.
+\item[E4] Every fault scenario produces the response it was designed to produce.
+\item[E5] A reviewer can replay a run and see what the controller proposed, what was applied, why it was changed and what happened.
+\end{itemize}
+
+The \emph{research criteria} are the hypotheses in \cref{sec:eval}. The experiment may
+support them or not. A clear ``no, it did not help'', backed by evidence, still meets the
+project's objectives. All numeric thresholds are fixed before the final test.
+
+\textbf{Progress} is measured by what has been delivered, not by hours spent. Each
+milestone in \cref{sec:schedule} ends with something that can be shown: merged code,
+passing tests and saved results. Week to week, the team tracks milestones reached, open
+blockers, whether automated tests pass, and how many runs can be reproduced.
+
+\textbf{Not part of this project.} Use on a real oil field; any claim that the system is
+safe in the real world; inventing a new learning algorithm, fast model or statistical
+method (the contribution is combining existing ones and testing the combination); and
+treating simulator output as if it were reality.
+
+% ============================================================== 3
+\section{Background and State of the Art}
+
+\textbf{Reservoir simulation and the Egg model.} A detailed (``full-physics'') reservoir
+simulator divides the reservoir into thousands of small cells and solves the flow equations
+for oil and water in each one. OPM Flow is an open-source simulator of this kind that reads
+the standard input files used in industry \cite{rasmussen2021opm}. The Egg model
+\cite{jansen2014egg,egg2014dataset} is a small made-up reservoir published for research on
+waterflooding. It has eight injectors and four producers, about 18,500 cells, and a
+simulated life of 3,600 days. It comes in 100 versions that differ in how easily fluid
+flows through different parts of the rock, which represents not knowing the true geology.
+Earlier work optimized injection on such models with gradient-based methods
+\cite{brouwer2004dynamic}. These are accurate but slow, and must be redone whenever the
+reservoir model changes.
+
+\textbf{Fast models (CRM).} The capacitance--resistance model (CRM) describes a reservoir
+as a set of connections between injectors and producers. Each connection responds to a
+change in injection gradually, like a resistor--capacitor circuit
+\cite{yousef2006crm,sayarpour2009crm}. Its settings are fitted from injection and
+production data only, and it runs in microseconds where a detailed simulation takes
+minutes. CRM is widely used for forecasting \cite{soroush2018crmreview}. It is known to be
+less accurate when the rock varies a lot from place to place \cite{mamghaderi2021crm}, and
+Egg is built to vary in exactly that way. We therefore expect the fast model to be wrong,
+and the project is built around that.
+
+\textbf{Reinforcement learning with a limited view.} When a controller cannot see the full
+state of the system, the best decision depends on what it has seen in the past
+\cite{kaelbling1998pomdp}. Proximal Policy Optimization (PPO) \cite{schulman2017ppo} is a
+widely used RL algorithm. \emph{Recurrent} PPO adds a memory unit (an LSTM
+\cite{hochreiter1997lstm}) so that the controller can remember earlier measurements. Both
+are available in the open-source library Stable-Baselines3 \cite{raffin2021sb3}, which
+uses the standard Gymnasium interface between a controller and a simulation
+\cite{towers2024gymnasium}.
+
+\textbf{Safety filters.} A safety filter changes unsafe decisions before they are applied
+\cite{wabersich2021filter,dalal2018safety}. When the predicted effect of a decision is a
+straight-line function of the decision, finding the closest safe decision is a small
+optimization problem called a quadratic program (QP). Solvers such as OSQP handle it in
+milliseconds \cite{stellato2020osqp}. Other approaches teach the controller the limits
+during training instead \cite{achiam2017cpo}; one was recently applied to waterflooding
+\cite{chen2025wcsac}.
+
+\textbf{Measuring how wrong a model is.} \emph{Conformal prediction} is a simple
+statistical method for putting a bound on a model's error. The model's errors are measured
+on data set aside for that purpose, and a chosen percentile of those errors (for example
+the 95th) is used as the bound. If new cases are similar to the ones measured, the bound
+holds about that often \cite{lei2018conformal,angelopoulos2021gentle}. A one-sided version
+looks only at errors in the dangerous direction. Versions that adapt over time exist for
+data that change \cite{gibbs2021aci}.
+
+\textbf{What is missing.} We searched the literature specifically for work that would make
+this project unnecessary. Each piece exists already: RL for waterflooding, RL with safety
+limits for waterflooding \cite{chen2025wcsac}, CRM and studies of its error
+\cite{mamghaderi2021crm}, safety filters, and conformal prediction. In what we reviewed, we
+did not find them put together the way \aur{} does: measuring the fast model's error
+against a detailed simulator, turning the dangerous part of that error into a margin inside
+a safety filter, and testing the result on reservoir versions never used during
+development. Our contribution is that combination and a fair experiment that shows whether
+it helps.
+
+% ============================================================== 4
+\section{Proposed Solution and Methods}\label{sec:solution}
+
+\subsection{System design}
+
+\aur{} has a \emph{control loop} that runs once for every decision, and \emph{preparation
+steps} done beforehand: training the controller, fitting the fast model and computing the
+margin (\cref{fig:arch}). One pass through the loop works like this:
+\begin{enumerate}
+\item The simulator (OPM running an Egg reservoir) pauses at step $k$ and reports the well measurements.
+\item The supervisor checks that the measurements are valid and passes them to the controller as its observation $o_k$.
+\item The controller uses $o_k$ and its memory to propose injection rates $u^{\mathrm{RL}}_k$.
+\item The safety filter uses the fast model to predict the resulting pressure, adds the margin, and if needed changes the rates to the closest safe ones, $u^\star_k$.
+\item The simulator applies $u^\star_k$, moves forward one step, and confirms it applied what was asked.
+\item Every stage is logged separately: what was proposed, what the filter changed, what was applied and what happened.
+\end{enumerate}
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[font=\sffamily\small,
+  box/.style={draw=#1,fill=#1!10,rounded corners=2pt,line width=0.8pt,
+    minimum height=1.15cm,text width=3.5cm,align=center},
+  arr/.style={-{Stealth[length=2.2mm]},line width=0.8pt,aurNavy},
+  off/.style={-{Stealth[length=2.2mm]},line width=0.8pt,aurGrey,dashed}]
+\node[box=cAziz] (res) {Reservoir simulator\\\footnotesize OPM Flow + Egg};
+\node[box=cTimur,right=1.5cm of res] (sup) {Supervisor\\\footnotesize checks data, handles faults};
+\node[box=cAbdu,right=1.5cm of sup] (ctl) {AI controller\\\footnotesize RL with memory};
+\node[box=cIsmael,below=1.25cm of ctl] (filt) {Safety filter\\\footnotesize fast model + margin $\delta$};
+\node[box=cIsmael,below=1.25cm of sup] (cal) {Margin calculation\\\footnotesize fast model vs.\ OPM};
+\node[box=cTimur,above=0.75cm of sup] (fault) {Fault injector\\\footnotesize test scenarios};
+\node[box=cMahdi,below=1.25cm of res] (tel) {Logging\\\footnotesize experiments, dashboard};
+\draw[arr] (res) -- node[above,font=\sffamily\scriptsize]{well data} (sup);
+\draw[arr] (sup) -- node[above,font=\sffamily\scriptsize]{$o_k$} (ctl);
+\draw[arr] (ctl) -- node[right,font=\sffamily\scriptsize]{$u^{\mathrm{RL}}_k$} (filt);
+\draw[arr] (filt.south) -- ++(0,-0.55) -| node[pos=0.25,below,font=\sffamily\scriptsize]{applied rates $u^\star_k$} ($(res.south west)+(-0.45,-0.0)$) |- (res.west);
+\draw[off] (cal) -- node[above,font=\sffamily\scriptsize]{$\delta$} (filt);
+\draw[off] (fault) -- (sup);
+\draw[off] (res) -- node[left,font=\sffamily\scriptsize]{logs} (tel);
+\draw[off] (tel) -- node[below,font=\sffamily\scriptsize]{paired runs} (cal);
+\end{tikzpicture}
+\caption{The \aur{} control loop (solid arrows) and the supporting parts (dashed arrows).
+Colours show who owns each part: Aziz (teal), Timur (red), Abdurrahman (purple), Ismael
+(blue), Mahdi (orange).}\label{fig:arch}
+\end{figure}
+
+The controller's limited view is enforced in the code, not just by agreement. The
+underground pressures and the detailed simulator's result go only to logging, margin
+calculation and final testing. An automated test fails if any of that data shows up in what
+the controller sees. Everything is written in Python and runs on team laptops or one
+workstation. OPM Flow runs in a Docker container with a fixed version, so every member uses
+exactly the same simulator. The parts exchange data in agreed formats, so members can build
+and test their own part before the others are finished.
+
+\subsection{Reservoir simulation (\AzizS)}
+
+The Egg input files are prepared by a script from the published download and are never
+edited by hand. A reservoir version is chosen by swapping in its rock-property file. The
+controller has to change the injection rates at every decision and then continue the same
+simulation. Our default way to do this is to run OPM up to step $k$, save its state, and
+restart from that state with the new rates for step $k+1$. OPM also has a Python interface
+that may be faster. Timing both options is the first implementation task. Every step is
+checked: the simulator finished without error, the expected output exists, the requested
+rates were applied, and the results make physical sense (no negative flows, water cut
+between 0 and 1, totals that add up). To measure the fast model's error, the same saved
+state can be re-run with different candidate decisions, which gives the detailed
+simulator's answer for exactly the situation the fast model was asked about.
+
+\subsection{AI controller (\AbduS)}
+
+The simulation is wrapped in the standard Gymnasium interface. The controller sees, for
+each producer, its oil rate, water rate, water cut and BHP; for each injector, its rate and
+BHP; plus the time elapsed and its own previous decision. Its output is eight injection
+rates, one per injector, within the range the Egg model allows. We propose one decision
+every 90 days, which gives 40 decisions over the reservoir's life. The controller's score
+is money-based: revenue from oil, minus the cost of handling produced water and of
+injecting water. The prices used are written down as an explicit assumption.
+
+Training directly in OPM may be too slow, because RL needs many simulated lifetimes. So
+most training is done in a fast stand-in simulation built from the fast model, and the
+controller is then refined and always tested in OPM. The versions with and without memory
+are trained under the same conditions, each with at least five different random seeds
+\cite{henderson2018matters}. Two simple controllers serve as baselines: the fixed injection
+rates that come with Egg, and a hand-written rule that sends less water to injectors whose
+nearby producers are producing more and more water.
+
+\subsection{Fast model and safety filter (\IsmaelS)}
+
+In the form of CRM we use, each injector--producer pair has its own connection. The liquid
+that injector $i$ contributes to producer $j$ over a time step $\Delta t$ is
+\begin{equation}\label{eq:crm}
+q_{ij}(t_k) = q_{ij}(t_{k-1})\,e^{-\Delta t/\tau_{ij}}
+  + \bigl(1-e^{-\Delta t/\tau_{ij}}\bigr) f_{ij}\, I_i(t_k),
+\end{equation}
+where $I_i$ is the injection rate, $f_{ij}$ (between 0 and 1) is the share of injector
+$i$'s water that reaches producer $j$, and $\tau_{ij}$ sets how quickly the producer
+responds. These values are fitted to OPM runs in which the injection rates are varied. The
+data used for fitting are never reused to judge how good the fit is.
+
+The limit we protect is the bottom-hole pressure of each injector, which must stay below
+$y_{\max}=\SI{420}{\bar}$. This is the limit set in the Egg model. We use it as the rule
+for our experiment; we do not claim it is the pressure at which real rock would crack. CRM
+predicts flow rates, not pressure, so we add a simple straight-line relation between each
+injector's rate and its pressure, fitted to OPM data and updated at each step with the
+latest measured pressure. The predicted pressure is then a straight-line function of the
+decision $u$: $\hat y_{k+1}(u)=c_k+G_k u$. Finding the closest safe decision becomes a
+small optimization problem:
+\begin{equation}\label{eq:qp}
+u^\star_k = \arg\min_{u,\;s\ge 0}\;
+ (u-u^{\mathrm{RL}}_k)^{\!\top} W (u-u^{\mathrm{RL}}_k) + \rho\,\mathbf{1}^{\!\top}s
+\quad\text{s.t.}\quad
+ c_k + G_k u + \delta \le y_{\max} + s,\quad u_{\min}\le u\le u_{\max}.
+\end{equation}
+In words: stay as close as possible to what the controller proposed, while keeping the
+predicted pressure plus the margin $\delta$ under the limit, and the rates within their
+allowed range. The extra variable $s$ lets the solver return an answer even when no fully
+safe decision exists. It is penalized heavily, and any use of it is logged as a failure of
+the filter. With $\delta=0$ the filter trusts the fast model completely; we call this the
+\emph{plain} filter. The problem is solved with OSQP \cite{stellato2020osqp}.
+
+Two details matter. First, the Egg input files tell the simulator itself to cap injector
+pressure at \SI{420}{\bar} by quietly pumping less water than requested. With that cap in
+place OPM would never report a pressure above the limit, and we could not see violations.
+For testing we raise the simulator's cap, so that OPM reports the pressure the requested
+rate really needs. Second, if injector pressure never gets close to the limit, there is
+nothing for the filter to do and the comparison tells us nothing. We check this early. If
+it is the case, we switch to a limit on produced water, which the fast model can also
+predict (\cref{sec:risks}).
+
+\subsection{Measuring the fast model's error (\IsmaelS{} with \AzizS)}
+
+For the same situation and the same decision, let $y^{\mathrm{OPM}}_{k+1}$ be the pressure
+from the detailed simulator and $\hat y^{\mathrm{ROM}}_{k+1}$ the fast model's prediction.
+The error is
+\begin{equation}\label{eq:res}
+r_{k+1} = y^{\mathrm{OPM}}_{k+1} - \hat y^{\mathrm{ROM}}_{k+1}.
+\end{equation}
+A positive error is the dangerous kind: the fast model predicted too low, so the filter
+thinks an unsafe decision is safe. We collect $n$ such errors on the reservoir versions set
+aside for this, sort them from smallest to largest, and take the value below which a chosen
+share of them fall. With a target of 95\% (that is, $\alpha=0.05$):
+\begin{equation}\label{eq:margin}
+\delta_\alpha = r_{(\lceil (n+1)(1-\alpha)\rceil)} .
+\end{equation}
+This is the one-sided conformal bound described in the background
+\cite{lei2018conformal}. In theory the fast model's error on a new case is then below
+$\delta_\alpha$ at least 95\% of the time, provided the new cases resemble the measured
+ones. Reservoir data only partly meet that condition, because errors close together in time
+or at neighbouring wells are related. So we treat 95\% as a target and report what is
+actually achieved. To estimate how well the margin carries over to a new reservoir version,
+we repeatedly leave one version out, compute the margin from the rest, and check it on the
+one left out. We also compute a separate margin for each injector. If the margin does not
+carry over, the fallback is a version that adjusts itself over time \cite{gibbs2021aci}.
+The planned amount of data is 20 reservoir versions $\times$ 20 points in time $\times$ 5
+candidate decisions, about 2,000 short OPM runs.
+
+\subsection{Fault testing and failure handling (\TimurS)}
+
+A control system that has only been tested with perfect data has not really been tested. A
+fault injector creates problems on purpose: missing, outdated, delayed or impossible
+measurements; noise and sudden spikes; a fast model that has drifted; a controller that
+outputs garbage; a safety filter that finds no answer or takes too long; a simulator step
+that crashes. The scenarios are based on what real oil-field data look like
+(\cref{sec:data}). A supervisor, written as a small state machine, checks every measurement
+(right format, sensible range, a real number, recent enough) and watches for components
+that stop responding. It has four modes: \emph{Normal}; \emph{Degraded} (use the last good
+measurements for a limited time, with a larger margin); \emph{Fallback} (apply a cautious
+action that is known to be within limits); and \emph{Safe stop} (end the run and flag it).
+It waits for conditions to be stable before switching back, so it does not flip rapidly
+between modes. Each scenario is an automated test with an expected sequence of modes. We
+report how often faults are detected, how quickly, how many false alarms occur on clean
+runs, and how much performance is lost.
+
+\subsection{Logging, experiments and dashboard (\MahdiS)}
+
+One log record is written per decision step, with each stage stored separately: the
+measurements, the proposed decision, the fast model's prediction, the margin, the applied
+decision, what the simulator did, the result, the supervisor's mode and timings. Every run
+also saves a record of exactly how it was produced: the version of the code, the settings,
+which reservoir version, the random seeds, the simulator version and whether it succeeded.
+A batch runner works through every combination of controller, reservoir version and seed in
+parallel. It can resume after an interruption, and it keeps failed runs, with the reason,
+instead of discarding them. The dashboard reads only these logs, so it shows what actually
+happened.
+
+\subsection{Alternatives considered}
+
+For each major design choice we scored the options against weighted criteria. The scoring
+tables are in the repository and \cref{tab:alt} gives the outcome. For the system as a
+whole we considered two other designs. One was classical model-based control using the fast
+model alone; it suffers from the same model error and involves no learning. The other was
+an RL controller trained to respect the limit on its own; its limits hold only on average,
+and the model error is hidden inside the controller where it cannot be inspected. The plain
+filter and the fixed-margin filter are the same system as ours with the margin set to zero
+or to a constant, so comparing all three is a fair test in which only one thing changes.
+
+\begin{table}[!htbp]
+\caption{Design choices.}\label{tab:alt}
+\small
+\begin{tabularx}{\textwidth}{@{}P{2.3cm}P{2.6cm}P{3.1cm}L@{}}
+\toprule
+\textbf{Decision} & \textbf{Chosen} & \textbf{Alternatives} & \textbf{Main reason}\\
+\midrule
+Simulator & OPM Flow & MRST, commercial simulators & Free, runs Egg as published, and the team has already run it\\
+Test reservoir & Egg (100 versions) & SPE10, OLYMPUS, a model of Volve & Many versions allow separate ones for training, margin and final test; each run is quick\\
+Fast model & CRM, one connection per injector--producer pair & Simpler CRM, neural-network model & Its parameters have a physical meaning, and it keeps the safety filter a simple optimization problem\\
+Controller & PPO with memory & PPO fed its last few observations, SAC & Learns for itself what to remember; the simpler option is the fallback\\
+Safety method & Filter that corrects each decision & Penalty in the score, limits learned in training & Checks every decision, shows why it changed one, and has one clear place to add the margin\\
+Margin & Percentile of measured errors (conformal) & Assume bell-curve errors; use the worst error seen & Makes no assumption about how the errors are distributed\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================== 5
+\section{Data, Simulation and Feasibility}\label{sec:data}
+
+\aur{} uses three outside resources, each for a different purpose (\cref{tab:res}).
+
+\begin{table}[!htbp]
+\caption{Outside resources, what each is for, and what each cannot tell us.}\label{tab:res}
+\small
+\begin{tabularx}{\textwidth}{@{}P{2.2cm}P{3.6cm}LP{3.2cm}@{}}
+\toprule
+\textbf{Resource} & \textbf{What it is} & \textbf{What it lets us do} & \textbf{What it cannot show}\\
+\midrule
+Egg model \cite{jansen2014egg} & A published made-up reservoir in 100 versions & Run repeatable experiments on many different reservoirs & That results hold on a real field\\
+OPM Flow \cite{rasmussen2021opm} & A detailed open-source simulator & See the result of any decision, including ones nobody ever made & What a real reservoir would do\\
+Volve \cite{equinor2018volve} & Recorded data from a real oil field & See what real measurements and real data problems look like & How a different controller would have done\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{We generate our experimental data ourselves.} Every OPM run produces a complete
+record of flow rates and pressures for every well at every step. The error measurements,
+the margin and the final test results all come from our own simulations. What limits us is
+computing time, not the amount of data available.
+
+\textbf{Egg.} We downloaded the model from its permanent online record
+\cite{egg2014dataset} and checked it in detail. All 100 versions load correctly. Injectors
+pump \SI{79.5}{\cubic\metre\per\day} each with a \SI{420}{\bar} pressure limit, producers
+are held at \SI{395}{\bar}, and the simulation covers 120 steps of 30 days. Egg is
+deliberately small and simple. That is what makes thousands of runs affordable, and we do
+not present it as a real reservoir.
+
+\textbf{Running the detailed simulator.} The step the whole project depends on already
+works. OPM Flow ran the Egg model from start to finish and produced output our software can
+read. We then changed one setting, lowering injector 1 from 79.5 to
+\SI{60}{\cubic\metre\per\day}, and ran it again. OPM applied exactly that change (total
+injection went from 636.0 to \SI{616.5}{\cubic\metre\per\day}), and production responded
+(\cref{fig:f3}): total oil changed by $-0.35\%$ and total produced water by $-3.82\%$. This
+does not mean 60 is a better setting. It shows that our software can change a decision in
+the detailed simulator and measure what happens, which is what a controller needs.
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.86\textwidth,height=5.0cm,
+  xlabel={Simulated time (days)},ylabel={Field rate (m$^3$/d)},
+  xmin=0,xmax=3600,ymin=0,ymax=700,xtick={0,600,...,3600},
+  grid=major,grid style={aurLight},
+  legend style={font=\footnotesize,at={(0.5,1.03)},anchor=south,legend columns=4,draw=none},
+  every axis plot/.append style={line width=1pt}]
+\addplot[aurNavy] table[x=day,y=FOPRb]{\FthreeData};
+\addplot[aurNavy,dashed] table[x=day,y=FOPRp]{\FthreeData};
+\addplot[aurTeal] table[x=day,y=FWPRb]{\FthreeData};
+\addplot[aurTeal,dashed] table[x=day,y=FWPRp]{\FthreeData};
+\legend{Oil, original,Oil, changed,Water, original,Water, changed}
+\end{axis}
+\end{tikzpicture}
+\caption{Total oil and water production from OPM Flow for the original Egg settings and
+with injector 1 lowered from 79.5 to \SI{60}{\cubic\metre\per\day} (the team's own test
+run).}\label{fig:f3}
+\end{figure}
+
+\textbf{Volve.} The oil company Equinor released recorded data from its Volve field in the
+North Sea for research and teaching \cite{equinor2018volve}. Our review found seven wells
+(two water injectors and five producers) and about 15,600 daily records. The data are
+messy: downhole pressure is missing in about 43\% of records, the injectors have almost no
+pressure data, some wells switch between injecting and producing, and a few records contain
+impossible negative volumes. As a first test, we fitted the CRM to monthly Volve data and
+checked its forecasts on the last 30\% of each producer's history. It beat the simplest
+possible forecast (``next month equals this month'') for only one of the five producers. We
+draw two lessons. Real field data are much messier than simulator output, which is what our
+fault scenarios are based on. And a simple model's error on real data is large, so it has
+to be measured, not assumed small. We use Volve only for these two purposes. A recording of
+the past cannot show what would have happened under different decisions.
+
+\textbf{Feasibility.} We completed seven feasibility checks, all saved in the repository.
+We obtained the data and tools; confirmed the Egg dataset is complete; ran Egg in OPM and
+changed its settings from our software; confirmed that every piece of data the design needs
+is available; checked our reservoir assumptions against published sources; reviewed the
+literature; and reviewed the Volve data. The remaining parts use well-maintained
+open-source libraries. The main open question is how fast OPM can be run step by step, and
+that is the first thing we will measure.
+
+% ============================================================== 6
+\section{Evaluation: How We Will Know Whether It Worked}\label{sec:eval}
+
+\subsection{Research question and hypotheses}
+
+\begin{keybox}[title=Research question.]
+If the safety filter includes a margin based on the fast model's measured error, does the
+controller break the pressure limit less often on reservoir versions it has never seen,
+compared with the same controller and a filter with no margin, and without losing much
+oil production?
+\end{keybox}
+
+\begin{itemize}
+\item[H1] \emph{The error matters.} The fast model predicts too low often enough that the plain filter still lets violations through in OPM.
+\item[H2] \emph{Main hypothesis.} On unseen reservoir versions, the filter with the measured margin has fewer or smaller violations than the plain filter.
+\item[H3] \emph{Cost.} For a similar number of violations, the measured margin gives up less oil (or money) than a fixed, guessed margin.
+\item[H4] \emph{Memory.} Given the same measurements, the controller with memory does better than the one without.
+\end{itemize}
+
+\subsection{Experiment design}
+
+This follows the usual machine-learning practice of separate training and test data, except
+that we split reservoir versions instead of rows of a table. The 100 Egg versions are
+divided once: 60 for development (training, tuning and demonstrations), 20 for measuring
+the fast model's error, and 20 kept unseen for the final test. The assignment is random
+with a fixed seed and is saved in the repository. The experiment software refuses to load
+the test versions until the test plan has been fixed.
+
+The main experiment compares seven controllers, each adding one feature to the one before
+(\cref{tab:ladder}). The comparisons that answer the research question are C4 against C6
+and C5 against C6.
+
+\begin{table}[!htbp]
+\caption{The controllers compared on unseen reservoir versions.}\label{tab:ladder}
+\small
+\begin{tabularx}{\textwidth}{@{}lP{5.6cm}Ll@{}}
+\toprule
+\textbf{ID} & \textbf{Controller} & \textbf{What it tells us} & \textbf{Hyp.}\\
+\midrule
+C0 & Fixed rates that come with Egg & The baseline: no control at all & --\\
+C1 & Hand-written rule & Does learning beat a simple rule? & --\\
+C2 & RL without memory, no filter & How well learning does without memory & H4\\
+C3 & RL with memory, no filter & Whether memory helps & H4\\
+C4 & RL with memory + plain filter (no margin) & Does trusting the fast model still allow violations? & H1\\
+C5 & RL with memory + fixed margin (several sizes) & What a guessed margin costs in production & H3\\
+C6 & RL with memory + measured margin & Does a margin based on measured error help? & H2, H3\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Everything we report is measured from what happened in the detailed simulator, never from
+the fast model's predictions. We record total oil and water and the money-based score; how
+often the limit was broken, by how much and for how long; how often and how strongly the
+filter changed the controller's decision; the fast model's errors; and how often the margin
+actually covered the error, compared with the 95\% target.
+
+\textbf{Test plan and statistics.} Before the final test we fix everything that could
+affect the result and save it as a tagged version of the repository: the split of reservoir
+versions, what the controller sees and controls, the prices in its score, the 95\% target,
+what we measure, the fixed margin sizes, the number of seeds and the statistical method.
+The 20 test versions are then used once. Each learned controller is trained with at least
+five random seeds, and each is tested on all 20 test versions. Because every controller is
+tested on the same versions, we compare them version by version. We report 95\% confidence
+intervals computed by bootstrap resampling \cite{agarwal2021precipice}, and we only claim a
+difference when the interval does not include zero. The final test is about 840 full
+simulations. If one takes $T$ minutes, the total is about $14T$ hours of computing, which
+is why measuring $T$ comes first.
+
+\subsection{Telling right results from wrong ones}
+
+No one on the team is a reservoir engineer, and we cannot ask an expert to review every
+run. So we check correctness at four levels:
+\begin{itemize}
+\item \emph{Does each part work?} Every component is tested on a case where we already know the answer. If we generate data from a CRM with known settings, fitting must recover those settings. If a decision is already safe, the filter must return it unchanged. On made-up errors with a known distribution, the margin must cover 95\% of them.
+\item \emph{Did the experiment run as planned?} Saved run records and the guard on the test versions show that the experiment ran as specified. We also check results that can be predicted in advance: a margin of zero must behave exactly like the plain filter, and a bigger margin must never cause more violations.
+\item \emph{Do the results make physical sense?} Basic rules are checked at every step, and we check that changes go in the right direction (pumping less water must not raise the pressure at that well). Our run of the original Egg settings is compared with the reference results published with Egg.
+\item \emph{Expert review.} Two or three scheduled sessions with someone qualified in reservoir engineering, at fixed points in the project, cover the few questions that tests cannot answer, such as whether injector pressure is a sensible limit to use for this reservoir.
+\end{itemize}
+
+We write down what each possible result would mean before we see the results
+(\cref{tab:interp}). Finding that the margin does not help is an acceptable outcome, and we
+would report it along with the reason.
+
+\begin{table}[!htbp]
+\caption{What each possible result would mean, decided in advance.}\label{tab:interp}
+\small
+\begin{tabularx}{\textwidth}{@{}P{6.2cm}L@{}}
+\toprule
+\textbf{If we see\ldots} & \textbf{It means\ldots}\\
+\midrule
+C6 has fewer violations than C4, and more oil than C5 for similar violations & H2 and H3 are supported, for the conditions we tested\\
+C6 and C4 about the same, both with almost no violations & The limit is rarely reached, or the fast model is good enough; H1 is not supported; try the produced-water limit\\
+C6 and C4 about the same, both with violations & The margin is too small, or it did not carry over to new reservoir versions\\
+C6 is safe but no better than C5 & A measured margin has no advantage over a guessed one here; H3 is rejected\\
+C3 and C2 about the same & Memory does not help with these measurements; H4 is rejected\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Demonstration}
+
+The system is shown through an interactive dashboard that replays logged runs, not through
+text scrolling in a terminal. It shows the reservoir and wells over time; what the
+controller proposed next to what was actually applied; the pressure limit, the limit with
+the margin, the fast model's prediction and the detailed simulator's result at each step;
+the measured error; faults being triggered live and the supervisor's response; and the
+comparison of all controllers with confidence intervals. Each member presents their own
+part. The demonstration uses only development reservoir versions, so the test versions stay
+unseen.
+
+% ============================================================== 7
+\section{Team, Degree Relevance and Skills}
+
+\subsection{Who owns what, and how it relates to each degree}
+
+Every member owns one part of the system from design through to demonstration. Each part
+also has a backup person who reviews changes to it and could take it over
+(\cref{tab:own}).
+
+\begin{table}[!htbp]
+\caption{Ownership, backup and relation to each member's program.}\label{tab:own}
+\small
+\begin{tabularx}{\textwidth}{@{}P{2.0cm}P{3.4cm}P{1.7cm}L@{}}
+\toprule
+\textbf{Member} & \textbf{Owns} & \textbf{Backup} & \textbf{Relation to degree program}\\
+\midrule
+\IsmaelS{} (\IsmaelProg) & Fast model, safety filter, margin, overall design & \AzizS & Optimization and statistics built as tested software modules; software architecture and interface design\\
+\AzizS{} (\AzizProg) & OPM Flow + Egg simulation, paired runs & \IsmaelS & Integrating a large existing scientific program into an automated, repeatable pipeline\\
+\AbduS{} (\AbduProg) & RL setup, simple baseline controllers, RL with and without memory & \MahdiS & Machine-learning engineering: designing the training setup and evaluating it fairly and repeatably\\
+\MahdiS{} (\MahdiProg) & Logging, experiment runner, statistics, dashboard & \TimurS & Data and experiment infrastructure, statistical analysis and a user-facing application\\
+\TimurS{} (\TimurProg) & Fault injector, supervisor & \AbduS & Dependable real-time software: fault detection, monitoring and safe fallback, verified by automated tests\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Skills of the team as a whole}
+
+Between us we cover the three areas the project needs: software engineering (design,
+testing, automated builds, real-time monitoring), data-driven methods (reinforcement
+learning, statistics) and numerical modelling (simulation, fast models, optimization).
+Each area has a lead and a backup. The one thing none of us has is training in reservoir
+engineering. \Cref{sec:eval} explains how the project is set up so that its conclusions do
+not depend on having an expert check every run.
+
+\subsection{Methods and the courses they build on}
+
+\begin{table}[H]
+\caption{Methods used and the coursework they build on. Course codes are to be confirmed by
+each member against their own program.}\label{tab:methods}
+\small
+\begin{tabularx}{\textwidth}{@{}P{4.4cm}LP{3.0cm}@{}}
+\toprule
+\textbf{Method} & \textbf{Where we use it} & \textbf{Coursework}\\
+\midrule
+Breaking a system into parts with clear interfaces & Code structure, data formats, recorded design decisions & SYSC 3110, SYSC 4120\\
+Requirements analysis & Testable requirements, use cases & SYSC 3120\\
+Software testing & Unit, integration and system tests; automated test runs & SYSC 4101\\
+State machines and timing checks & Supervisor, detecting unresponsive components, parallel runs & SYSC 3303, SYSC 4001\\
+Machine learning with separate test data & RL controllers, unseen reservoir versions & SYSC 4415\\
+Modelling and optimization & Fitting the fast model, the safety filter, error analysis & SYSC 3600; optimization\\
+Statistics & Margin from measured errors, confidence intervals, experiment design & STAT 3502\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================== 8
+\section{Project Management and Schedule}\label{sec:schedule}
+
+\textbf{How we work.} Tasks are tracked on a GitHub project board. Each task has one
+outcome small enough to show progress within about a week, and states what has to be true
+for it to count as done. A task is finished when that is met, tests pass, the results are
+saved and the backup person has reviewed it. Changes to scope, data formats, limits or the
+test plan are written down as decisions, not made quietly.
+
+\textbf{What we agreed with the supervisors.} We meet every Thursday, 9:00--10:00, and send
+minutes the same day. Every member reports on their own work each week. Every part of the
+system must be needed to answer the research question. Fault scenarios must be based on
+real data and published sources. We must be able to judge whether results make physical
+sense. The demonstration must be understandable to a second reader from any background.
+Because grading is individual, each member's contribution is shown by records that last:
+tasks, code contributions, reviews, experiment results and their part of the demonstration
+and reports.
+
+\textbf{Milestones.} The work is divided into milestones of a month or less, each ending
+with something that can be shown (\cref{tab:ms}). The reservoir simulation comes first,
+because the controller, the error measurements and the final test all depend on being able
+to run OPM step by step. The other parts are built against simple stand-ins in the
+meantime, so everyone can work in parallel. Course dates are as the supervisors told us and
+will be confirmed against the official course material.
+
+\begin{table}[!htbp]
+\caption{Milestone plan.}\label{tab:ms}
+\small
+\begin{tabularx}{\textwidth}{@{}lP{2.5cm}L@{}}
+\toprule
+\textbf{ID} & \textbf{Dates} & \textbf{What exists at the end}\\
+\midrule
+M1 & Sep 28 -- Oct 23 & \textbf{Foundations.} Proposal submitted; requirements and data formats drafted; Egg running in OPM from a script; a complete loop with a fixed controller and a basic filter, fully logged\\
+M2 & Oct 26 -- Nov 20 & \textbf{Individual parts.} OPM running step by step with pressure output; RL setup and a first trained controller; fast model fitted to Egg; plain safety filter; first fault injector; run records and batch runner\\
+M3 & Nov 23 -- Dec 11 & \textbf{AI controller in the loop.} RL with memory plus the plain filter running in OPM; first measurements of the fast model's error (evidence for H1); supervisor; progress report\\
+-- & Dec 12 -- Jan 4 & Exams and break: spare time only\\
+M4 & Jan 5 -- Jan 23 & \textbf{Measured margin.} Error measurements, margin and coverage report; filter with the measured margin working; live fault demo; oral presentation and demonstration (about Jan 23)\\
+M5 & Jan 26 -- Feb 20 & \textbf{Ready for the final test.} All fault scenarios and a report on them; batch runner handling the full workload; fixed-margin comparison; test plan fixed (Feb 20)\\
+M6 & Feb 23 -- Mar 19 & \textbf{Final test.} All seven controllers on the unseen reservoir versions; statistics; poster fair (Mar 19)\\
+M7 & Mar 20 -- Apr 10 & \textbf{Wrap-up.} Final report and video; check that results can be reproduced; final release\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Effort.} The course expects about eight hours per student per week. Over roughly 26
+working weeks, five members have about 1,040 hours in total. About 975 are planned, split
+evenly to within 5\%, which leaves about 6\% spare.
+
+% ============================================================== 9
+\section{Risks and Mitigation}\label{sec:risks}
+
+Risks are listed in the repository and reviewed every week. Each has an owner, an action we
+are taking now, and a condition that tells us to switch to a backup plan. \Cref{tab:risks}
+lists the ones rated high for likelihood (L) or impact (I).
+
+\begin{table}[!htbp]
+\caption{Main risks. L and I are rated Low, Medium or High.}\label{tab:risks}
+\small
+\begin{tabularx}{\textwidth}{@{}P{4.0cm}ccLP{1.5cm}@{}}
+\toprule
+\textbf{Risk} & \textbf{L} & \textbf{I} & \textbf{What we do about it; when we switch to the backup plan} & \textbf{Owner}\\
+\midrule
+No one on the team is a reservoir engineer, so we may misjudge results & H & H & Automated physical checks; meaning of each result decided in advance; scheduled expert review. A result that fails a physical check is thrown out and investigated & \IsmaelS\\
+The pressure limit is rarely reached, so the safety comparison shows nothing & M & H & Check early how close pressures get to the limit. If fewer than 5\% of steps come near it, switch to the produced-water limit & \IsmaelS\\
+Running OPM step by step is too slow & M & H & Time the options first. If one full simulation takes over 30 minutes: train on the fast model, make decisions less often, run in parallel & \AzizS\\
+The margin does not carry over to new reservoir versions & M & M & Leave-one-out checks. If coverage is well below 95\%: per-well or self-adjusting margins; report the failure as a finding & \IsmaelS\\
+The controller with memory trains poorly & M & M & Start from a working controller without memory. If no progress by M3: use the simpler fallback and report H4 as unanswered & \AbduS\\
+Test reservoir versions leak into development, making the result invalid & L & H & The split is fixed and saved; the software refuses to load test versions before the test plan is fixed & \MahdiS\\
+Too much knowledge sits with one member & M & H & Owner and backup for every part; documentation in the repository; every member presents their own work weekly & All\\
+Late start squeezes the fall schedule & H & M & Get a minimal loop working first; milestones of a month or less; optional comparisons can be dropped & \IsmaelS\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================== 10
+\section{Special Components, Facilities and Cost}
+
+The project needs no hardware to be bought or built (\cref{tab:fac}). The only possible
+cost is renting cloud computers if our laptops are too slow for the final test. A cloud
+machine with 8--16 processor cores costs roughly \$0.40--\$0.80 per hour, so 200 hours
+would cost under \$150. No graphics card is needed: the controllers are small neural
+networks, and the simulator runs on ordinary processors.
+
+\begin{table}[!htbp]
+\caption{Components and facilities required.}\label{tab:fac}
+\small
+\begin{tabularx}{\textwidth}{@{}P{5.2cm}LP{3.4cm}@{}}
+\toprule
+\textbf{Component or facility} & \textbf{Needed for} & \textbf{Availability; cost}\\
+\midrule
+OPM Flow simulator (in Docker) & Detailed simulation for error measurement and final test & Open source; in use; \$0\\
+Egg model, 100 versions & Reservoirs for training, margin and final test & Public; downloaded; \$0\\
+Volve field data & Realistic measurements and fault scenarios & Free licence; downloaded; \$0\\
+Python libraries (Stable-Baselines3, CVXPY/OSQP, Streamlit) & Controller, safety filter, analysis, dashboard & Open source; \$0\\
+GitHub repository, automated tests and project board & Version control, testing, planning & Free for students; \$0\\
+Laptops & Development and small experiments & Members' own; \$0\\
+Multi-core workstation or cloud computer & Running many simulations in parallel for the final test & Department access \tbc{to confirm}; \$0--\$150\\
+Screen and space at the poster fair; poster printing & Live demonstration & Provided by the course \tbc{to confirm}; \$0--\$60\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================== 11
+\section{Limitations and Expected Outcome}
+
+All of our comparisons are done in simulation, on a made-up reservoir. OPM is more accurate
+than our fast model, but it is still a simulator, and Egg is not a real field. The safety
+filter protects the limit we give it; \SI{420}{\bar} is Egg's limit, not the pressure at
+which real rock would crack. The 95\% target for the margin rests on a statistical
+assumption that reservoir data only partly meet, so we report what is actually achieved.
+All 100 Egg versions are the same kind of reservoir, so our results may not carry over to
+other kinds.
+
+By the end of the project we will deliver a working control system whose results can be
+reproduced; a comparison of seven controllers on unseen reservoir versions, with confidence
+intervals, showing which hypotheses hold and which do not; a dataset of the fast model's
+errors and a library of fault scenarios; and the course deliverables built from this work.
+The kind of claim we expect to make is: ``the measured margin reduced limit violations on
+20 unseen Egg reservoir versions in OPM Flow.'' Whether the main hypothesis turns out true
+or false, the answer will be backed by evidence.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
