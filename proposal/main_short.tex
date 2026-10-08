@@ -14,7 +14,7 @@
 \usepackage{microtype}
 \usepackage[english]{babel}
 \usepackage{setspace}
-\setstretch{1.05}
+\setstretch{1.5}
 \setlength{\parskip}{0.4em}
 \setlength{\parindent}{0pt}
 
@@ -424,32 +424,27 @@ mark use cases that run the external OPM Flow simulator.}
 \label{fig:usecase}
 \end{figure}
 
-% This part kind of sucks and needs to be review thoroughly
-% \subsection{Success criteria and how progress is measured}
-
-% Success is judged in two ways. The \emph{engineering criteria} are about building a system
-% that works and can be checked. We expect to meet all of them:
-% \begin{itemize}
-% \item[E1] A complete simulation runs from start to finish with no manual steps, and every step is logged.
-% \item[E2] Re-running a saved run record reproduces the same decisions.
-% \item[E3] The safety filter never breaks its own limit when a safe decision exists, and always reports when none exists.
-% \item[E4] Every fault scenario produces the response it was designed to produce.
-% \item[E5] A reviewer can replay a run and see what the controller proposed, what was applied, why it was changed and what happened.
-% \end{itemize}
-
-% The \emph{research criteria} are the hypotheses in \cref{sec:eval}. The experiment may
-% support them or not. A clear ``no, it did not help'', backed by evidence, still meets the
-% project's objectives. All numeric thresholds are fixed before the final test.
-
-% \textbf{Progress} is measured by what has been delivered, not by hours spent. Each
-% milestone in \cref{sec:schedule} ends with something that can be shown: merged code,
-% passing tests and saved results. Week to week, the team tracks milestones reached, open
-% blockers, whether automated tests pass, and how many runs can be reproduced.
-
-% \textbf{Not part of this project.} Use on a real oil field; any claim that the system is
-% safe in the real world; inventing a new learning algorithm, fast model or statistical
-% method (the contribution is combining existing ones and testing the combination); and
-% treating simulator output as if it were reality.
+\subsection{Success criteria and how progress is measured}
+ 
+The project succeeds if the system meets its requirements and the final experiment gives a
+clear answer to the research question, whichever way that answer goes. The
+\emph{engineering criteria} must all be met:
+\begin{itemize}
+\item[E1] A complete simulation runs from start to finish with no manual steps, and every step is logged.
+\item[E2] Re-running a saved run record reproduces the same decisions.
+\item[E3] The safety filter never breaks its own limit when a safe decision exists, and reports when none exists.
+\item[E4] Every fault scenario produces its expected response.
+\item[E5] A reviewer can replay any run and see what the controller proposed, what was applied and why.
+\end{itemize}
+The \emph{research criterion} is that the hypotheses in \cref{sec:eval} are tested as
+planned, with all thresholds fixed before the final test. A result showing that the margin
+does not help, backed by evidence, still meets this criterion.
+ 
+\textbf{Measuring progress.} Progress is measured by what has been delivered, not by hours
+spent. At each weekly meeting we track: milestones completed against the plan in
+\cref{tab:ms}; the share of Must requirements (\cref{tab:fr}) whose check passes; whether
+the automated tests pass and their coverage (NFR-05); and the number of runs that can be
+reproduced from their saved records.
 
 % ============================================================== 3
 \section{Background and State of the Art}
@@ -511,31 +506,6 @@ a safety filter, and testing the result on reservoir versions never used during
 development. Our contribution is that combination and a fair experiment that shows whether
 it helps. Any potential similar projects may exist internally for company use, but none are 
 released or open source.
-
-% I really don't think we need this, this seems like extra BS
-% \Cref{tab:related} compares the closest earlier work with the features that together
-% define what \aur{} does.
-
-% \begin{table}[!htbp]
-% \centering\footnotesize
-% \setlength{\tabcolsep}{3pt}
-% \caption{Closest earlier work compared with the features of \aur{}. \cmark{} = present,
-% \pmark{} = partly present or in a different form, blank = absent.}
-% \label{tab:related}
-% \begin{tabularx}{\textwidth}{@{}Lcccccccc@{}}
-% \toprule
-%  & \rotatebox{90}{\makecell[l]{Waterflood\\application}} & \rotatebox{90}{\makecell[l]{Limited\\view}} & \rotatebox{90}{\makecell[l]{Controller\\with memory}} & \rotatebox{90}{\makecell[l]{Physical fast\\model (CRM)}} & \rotatebox{90}{\makecell[l]{Filter that corrects\\each decision}} & \rotatebox{90}{\makecell[l]{Fast-model error\\measured}} & \rotatebox{90}{\makecell[l]{Margin from\\measured error}} & \rotatebox{90}{\makecell[l]{Safety tested on\\unseen reservoirs}} \\
-% \midrule
-% RL for waterflooding \cite{hourfar2019rl,ma2019drl,zhang2022drl} & \cmark & & & & & & & \\
-% RL with safety limits for waterflooding \cite{chen2025wcsac} & \cmark & & & & \pmark & & & \pmark \\
-% CRM for choosing rates, and CRM error \cite{sayarpour2009crm,mamghaderi2021crm} & \cmark & & & \cmark & & \cmark & \pmark & \\
-% Safety filters \cite{wabersich2021filter,carr2023shield} & & \pmark & & & \cmark & & & \\
-% Conformal error bounds \cite{lei2018conformal,gopakumar2026conformal} & & & & & & \cmark & \cmark & \\
-% \midrule
-% \textbf{\aur{} (proposed)} & \cmark & \cmark & \cmark & \cmark & \cmark & \cmark & \cmark & \cmark \\
-% \bottomrule
-% \end{tabularx}
-% \end{table}
 
 % ============================================================== 4
 \section{Proposed Solution and Methods}\label{sec:solution}
@@ -816,192 +786,94 @@ parallel. It can resume after an interruption, and it keeps failed runs, with th
 instead of discarding them. The dashboard reads only these logs, so it shows what actually
 happened.
 
-% We have to over this as a group, especially cuz its asking for a general alternative to the whole system
-% \subsection{Alternatives considered}
+\subsection{Alternatives considered}
 
-% For the system as a whole we compared five designs (\cref{tab:altsys}). Designs C and D
-% are the same system as ours with the margin set to zero or to a guessed constant, so
-% comparing C, D and E is a fair test in which only one thing changes. For each main
-% component we then scored the options against weighted criteria: whether the research
-% result will be valid, whether it can be done in two terms, and whether it can be
-% reproduced. The scoring tables are in the repository and \cref{tab:alt} gives the outcome.
+For the system as a whole we compared five designs (\cref{tab:altsys}). Designs C and D
+are the same system as ours with the margin set to zero or to a guessed constant, so
+comparing C, D and E is a fair test in which only one thing changes. For each main
+component we then scored the options against weighted criteria: whether the research
+result will be valid, whether it can be done in two terms, and whether it can be
+reproduced. The scoring tables are in the repository and \cref{tab:alt} gives the outcome.
 
-% \begin{table}[!htbp]
-% \caption{System designs considered.}\label{tab:altsys}
-% \small
-% \begin{tabularx}{\textwidth}{@{}P{3.6cm}LLP{1.9cm}@{}}
-% \toprule
-% \textbf{Design} & \textbf{Strengths} & \textbf{Weaknesses for our question} & \textbf{Decision} \\
-% \midrule
-% A. Classical model-based control using the CRM, no learning & Well established; handles limits directly & Suffers from the same fast-model error; does not test learned control & Not built \\
-% B. RL trained to respect the limits by itself & A single component; strong recent results \cite{chen2025wcsac,achiam2017cpo} & Limits hold only on average; model error is hidden inside the controller & Optional comparison \\
-% C. RL + filter that trusts the fast model & Checks every decision & Safe only as far as the fast model is right & Baseline (plain filter) \\
-% D. RL + filter with a fixed cautious margin & Simple; reduces violations & Margin is a guess; may give up production for nothing & Baseline (fixed margin) \\
-% \textbf{E. \aur{}: RL + filter with a measured margin} & Checks every decision; margin based on error measured on separate reservoirs & More parts; depends on the margin carrying over to new reservoirs & \textbf{Selected} \\
-% \bottomrule
-% \end{tabularx}
-% \end{table}
+\begin{table}[!htbp]
+\caption{System designs considered.}\label{tab:altsys}
+\small
+\begin{tabularx}{\textwidth}{@{}P{3.6cm}LLP{1.9cm}@{}}
+\toprule
+\textbf{Design} & \textbf{Strengths} & \textbf{Weaknesses for our question} & \textbf{Decision} \\
+\midrule
+A. Classical model-based control using the CRM, no learning & Well established; handles limits directly & Suffers from the same fast-model error; does not test learned control & Not built \\
+B. RL trained to respect the limits by itself & A single component; strong recent results \cite{chen2025wcsac,achiam2017cpo} & Limits hold only on average; model error is hidden inside the controller & Optional comparison \\
+C. RL + filter that trusts the fast model & Checks every decision & Safe only as far as the fast model is right & Baseline (plain filter) \\
+D. RL + filter with a fixed cautious margin & Simple; reduces violations & Margin is a guess; may give up production for nothing & Baseline (fixed margin) \\
+\textbf{E. \aur{}: RL + filter with a measured margin} & Checks every decision; margin based on error measured on separate reservoirs & More parts; depends on the margin carrying over to new reservoirs & \textbf{Selected} \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-% \begin{table}[!htbp]
-% \caption{Design choices.}\label{tab:alt}
-% \small
-% \begin{tabularx}{\textwidth}{@{}P{2.3cm}P{2.6cm}P{3.1cm}L@{}}
-% \toprule
-% \textbf{Decision} & \textbf{Chosen} & \textbf{Alternatives} & \textbf{Main reason}\\
-% \midrule
-% Simulator & OPM Flow & MRST, commercial simulators & Free, runs Egg as published, and the team has already run it\\
-% Test reservoir & Egg (100 versions) & SPE10, OLYMPUS, a model of Volve & Many versions allow separate ones for training, margin and final test; each run is quick\\
-% Fast model & CRM, one connection per injector--producer pair & Simpler CRM, neural-network model & Its parameters have a physical meaning, and it keeps the safety filter a simple optimization problem\\
-% Controller & PPO with memory & PPO fed its last few observations, SAC & Learns for itself what to remember; the simpler option is the fallback\\
-% Safety method & Filter that corrects each decision & Penalty in the score, limits learned in training & Checks every decision, shows why it changed one, and has one clear place to add the margin\\
-% Margin & Percentile of measured errors (conformal) & Assume bell-curve errors; use the worst error seen & Makes no assumption about how the errors are distributed\\
-% \bottomrule
-% \end{tabularx}
-% \end{table}
+\begin{table}[!htbp]
+\caption{Design choices.}\label{tab:alt}
+\small
+\begin{tabularx}{\textwidth}{@{}P{2.3cm}P{2.6cm}P{3.1cm}L@{}}
+\toprule
+\textbf{Decision} & \textbf{Chosen} & \textbf{Alternatives} & \textbf{Main reason}\\
+\midrule
+Simulator & OPM Flow & MRST, commercial simulators & Free, runs Egg as published, and the team has already run it\\
+Test reservoir & Egg (100 versions) & SPE10, OLYMPUS, a model of Volve & Many versions allow separate ones for training, margin and final test; each run is quick\\
+Fast model & CRM, one connection per injector--producer pair & Simpler CRM, neural-network model & Its parameters have a physical meaning, and it keeps the safety filter a simple optimization problem\\
+Controller & PPO with memory & PPO fed its last few observations, SAC & Learns for itself what to remember; the simpler option is the fallback\\
+Safety method & Filter that corrects each decision & Penalty in the score, limits learned in training & Checks every decision, shows why it changed one, and has one clear place to add the margin\\
+Margin & Percentile of measured errors (conformal) & Assume bell-curve errors; use the worst error seen & Makes no assumption about how the errors are distributed\\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-% There's a lot of fake claims, made up data, and false info here
 % % ============================================================== 5
-% \section{Data, Simulation and Feasibility}\label{sec:data}
-
-% \aur{} uses three outside resources, each for a different purpose (\cref{tab:res}).
-
-% \begin{table}[!htbp]
-% \caption{Outside resources, what each is for, and what each cannot tell us.}\label{tab:res}
-% \small
-% \begin{tabularx}{\textwidth}{@{}P{2.2cm}P{3.6cm}LP{3.2cm}@{}}
-% \toprule
-% \textbf{Resource} & \textbf{What it is} & \textbf{What it lets us do} & \textbf{What it cannot show}\\
-% \midrule
-% Egg model \cite{jansen2014egg} & A published made-up reservoir in 100 versions & Run repeatable experiments on many different reservoirs & That results hold on a real field\\
-% OPM Flow \cite{rasmussen2021opm} & A detailed open-source simulator & See the result of any decision, including ones nobody ever made & What a real reservoir would do\\
-% Volve \cite{equinor2018volve} & Recorded data from a real oil field & See what real measurements and real data problems look like & How a different controller would have done\\
-% \bottomrule
-% \end{tabularx}
-% \end{table}
-
-% \textbf{We generate our experimental data ourselves.} Every OPM run produces a complete
-% record of flow rates and pressures for every well at every step. The error measurements,
-% the margin and the final test results all come from our own simulations. What limits us is
-% computing time, not the amount of data available.
-
-% \textbf{Egg.} We downloaded the model from its permanent online record
-% \cite{egg2014dataset} and checked it in detail. All 100 versions load correctly. Injectors
-% pump \SI{79.5}{\cubic\metre\per\day} each with a \SI{420}{\bar} pressure limit, producers
-% are held at \SI{395}{\bar}, and the simulation covers 120 steps of 30 days. Egg is
-% deliberately small and simple. That is what makes thousands of runs affordable, and we do
-% not present it as a real reservoir. \Cref{tab:egg} lists its main properties and
-% \cref{fig:egg-wells} shows where the wells are.
-
-% \noindent \begin{minipage}[t]{0.52\textwidth}
-% \vspace{0pt}
-% \captionof{table}[Audited properties of the Egg case used by \aur]{Properties of the Egg model, as we checked them.}
-% \label{tab:egg}
-% \small
-% \begin{tabularx}{\linewidth}{@{}P{3.1cm}L@{}}
-% \toprule
-% Grid & $60\times60\times7$ = 25{,}200 cells; 18{,}553 active \\
-% Cell size & \SI{8}{\metre}$\times$\SI{8}{\metre}$\times$\SI{4}{\metre} \\
-% Porosity; net-to-gross & 0.2 (same everywhere); 1 \\
-% Fluids & oil and water (metric units) \\
-% Geology & 100 versions of the rock properties (all read correctly) + one base version \\
-% Wells & 8 water injectors, 4 producers, open to all 7 layers \\
-% Injector setting & rate \SI{79.5}{\cubic\metre\per\day}, BHP limit \SI{420}{\bar} \\
-% Producer setting & BHP held at \SI{395}{\bar} \\
-% Schedule & 120 steps $\times$ \SI{30}{\day} = \SI{3600}{\day} \\
-% Outputs & field and well rates and totals; pressure and water content of every cell (in the saved state) \\
-% \bottomrule
-% \end{tabularx}
-% \end{minipage}\hfill
-% \begin{minipage}[t]{0.44\textwidth}
-% \vspace{0pt}
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[width=6.9cm,height=6.9cm,xmin=-2,xmax=63,ymin=-2,ymax=63,clip=false,
-%   xlabel={grid $I$},ylabel={grid $J$},axis equal image,
-%   tick label style={font=\scriptsize},label style={font=\scriptsize},
-%   xtick={0,20,40,60},ytick={0,20,40,60},
-%   axis background/.style={fill=aurSand!18}]
-%   \addplot[only marks,mark=triangle*,mark size=3.2pt,color=aurBlue,
-%     nodes near coords,point meta=explicit symbolic,
-%     every node near coord/.style={font=\scriptsize\sffamily\bfseries,color=aurBlue,anchor=west,xshift=1pt}]
-%     coordinates {(5,57)[I1] (30,53)[I2] (2,35)[I3] (27,29)[I4] (50,35)[I5] (8,9)[I6] (32,2)[I7] (57,6)[I8]};
-%   \addplot[only marks,mark=*,mark size=3pt,color=black!80,
-%     nodes near coords,point meta=explicit symbolic,
-%     every node near coord/.style={font=\scriptsize\sffamily\bfseries,color=black,anchor=west,xshift=1pt}]
-%     coordinates {(16,43)[P1] (35,40)[P2] (23,16)[P3] (43,18)[P4]};
-% \end{axis}
-% \end{tikzpicture}
-% \captionof{figure}[Egg well locations]{Egg well locations (from the input files we checked): injectors
-% \textcolor{aurBlue}{$\blacktriangle$}, producers $\bullet$.}
-% \label{fig:egg-wells}
-% \end{minipage}
-% \vspace{0.6em}
-
-% \textbf{Running the detailed simulator.} The step the whole project depends on already
-% works. OPM Flow ran the Egg model from start to finish and produced output our software can
-% read. We then changed one setting, lowering injector 1 from 79.5 to
-% \SI{60}{\cubic\metre\per\day}, and ran it again. OPM applied exactly that change (total
-% injection went from 636.0 to \SI{616.5}{\cubic\metre\per\day}), and production responded
-% (\cref{fig:f3}): total oil changed by $-0.35\%$ and total produced water by $-3.82\%$. This
-% does not mean 60 is a better setting. It shows that our software can change a decision in
-% the detailed simulator and measure what happens, which is what a controller needs.
-
-% \begin{figure}[!htbp]
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[width=0.86\textwidth,height=5.0cm,
-%   xlabel={Simulated time (days)},ylabel={Field rate (m$^3$/d)},
-%   xmin=0,xmax=3600,ymin=0,ymax=700,xtick={0,600,...,3600},
-%   grid=major,grid style={aurLight},
-%   legend style={font=\footnotesize,at={(0.5,1.03)},anchor=south,legend columns=4,draw=none},
-%   every axis plot/.append style={line width=1pt}]
-% \addplot[aurNavy] table[x=day,y=FOPRb]{\FthreeData};
-% \addplot[aurNavy,dashed] table[x=day,y=FOPRp]{\FthreeData};
-% \addplot[aurTeal] table[x=day,y=FWPRb]{\FthreeData};
-% \addplot[aurTeal,dashed] table[x=day,y=FWPRp]{\FthreeData};
-% \legend{Oil, original,Oil, changed,Water, original,Water, changed}
-% \end{axis}
-% \end{tikzpicture}
-% \caption{Total oil and water production from OPM Flow for the original Egg settings and
-% with injector 1 lowered from 79.5 to \SI{60}{\cubic\metre\per\day} (the team's own test
-% run).}\label{fig:f3}
-% \end{figure}
-
-% \textbf{Volve.} The oil company Equinor released recorded data from its Volve field in the
-% North Sea for research and teaching \cite{equinor2018volve}. Our review found seven wells
-% (two water injectors and five producers) and about 15,600 daily records. The data are
-% messy: downhole pressure is missing in about 43\% of records, the injectors have almost no
-% pressure data, some wells switch between injecting and producing, and a few records contain
-% impossible negative volumes. As a first test, we fitted the CRM to monthly Volve data and
-% checked its forecasts on the last 30\% of each producer's history. It beat the simplest
-% possible forecast (``next month equals this month'') for only one of the five producers. We
-% draw two lessons. Real field data are much messier than simulator output, which is what our
-% fault scenarios are based on. And a simple model's error on real data is large, so it has
-% to be measured, not assumed small. We use Volve only for these two purposes. A recording of
-% the past cannot show what would have happened under different decisions.
-
-% \textbf{Feasibility.} Before committing to this design we turned each major doubt into a
-% question we could test (\cref{tab:feas}). The results are saved in the repository. The
-% remaining parts use well-maintained open-source libraries. The main open question is how
-% fast OPM can be run one decision at a time, and that is the first thing we will measure.
-
-% \begin{table}[!htbp]
-% \caption{Feasibility checks completed.}\label{tab:feas}
-% \small
-% \begin{tabularx}{\textwidth}{@{}lP{4.4cm}LP{1.6cm}@{}}
-% \toprule
-% \textbf{ID} & \textbf{Question} & \textbf{Main evidence} & \textbf{Result} \\
-% \midrule
-% F1 & Do the data and tools exist, and can we get them? & Egg downloaded from its permanent record and checked; OPM manual and Volve licence saved & Pass \\
-% F2 & Is the Egg dataset complete and usable? & Grid, wells, well settings and schedule all read correctly; all 100 versions valid & Pass \\
-% F3 & Can OPM run Egg and respond to our changes? & Full 3,600-day run without error; a change to one injector applied exactly; producers responded & Pass \\
-% F4 & Is there a source for every piece of data the design needs? & Every input and output in the design is available directly, can be calculated, or needs code we will write & Pass \\
-% F5 & Can our assumptions about the reservoir be defended? & Each assumption checked against the Egg paper, the OPM manual and the CRM literature; none rejected & Pass with conditions \\
-% F6 & Has this already been done? & Literature search aimed at finding the same work; our claim narrowed to what is new & Pass with conditions \\
-% F7 & Does real field data support the approach? & Volve data reviewed; injection and production records exist; data problems listed & Pass \\
-% \bottomrule
-% \end{tabularx}
-% \end{table}
+\section{Data and Simulation}\label{sec:data}
+ 
+\aur{} uses three outside resources, each for a different purpose (\cref{tab:res}).
+ 
+\begin{table}[!htbp]
+\caption{Outside resources, what each is for, and what each cannot tell us.}\label{tab:res}
+\small
+\begin{tabularx}{\textwidth}{@{}P{2.2cm}P{3.6cm}LP{3.2cm}@{}}
+\toprule
+\textbf{Resource} & \textbf{What it is} & \textbf{What it lets us do} & \textbf{What it cannot show}\\
+\midrule
+Egg model \cite{jansen2014egg} & A published made-up reservoir in 100 versions & Run repeatable experiments on many different reservoirs & That results hold on a real field\\
+OPM Flow \cite{rasmussen2021opm} & A detailed open-source simulator & See the result of any decision, including ones nobody ever made & What a real reservoir would do\\
+Volve \cite{equinor2018volve} & Recorded production data from a real oil field & See what real measurements and real data problems look like & How a different controller would have done\\
+\bottomrule
+\end{tabularx}
+\end{table}
+ 
+\textbf{We generate our experimental data ourselves.} Each OPM run will produce a complete
+record of flow rates and pressures for every well at every step. The error measurements,
+the margin and the final test results all come from our own simulations, so the amount of
+data is limited by computing time rather than by what is available. We plan about 2,000
+short runs for measuring the fast model's error and about 840 full runs for the final test
+(\cref{sec:eval}).
+ 
+\textbf{Egg.} The Egg model is a benchmark reservoir published for research on
+waterflooding \cite{jansen2014egg,egg2014dataset}. As published, it has a
+$60\times60\times7$ grid with about 18,500 active cells, eight water injectors and four
+producers, and a ten-year (\SI{3600}{\day}) schedule. It comes in 100 versions that differ
+in rock properties. Egg is deliberately small and simple, which is what makes thousands of
+runs affordable; we do not present it as a real reservoir.
+ 
+\textbf{Volve.} The oil company Equinor released data from its Volve field in the North
+Sea for research and teaching \cite{equinor2018volve}. We use only its production data, a
+spreadsheet of about \SI{2}{MB} with daily rates and pressures for the field's wells. We do
+not train on it. It serves two purposes: to base our fault scenarios on the kinds of
+problems real measurements have, and to check how well the fast model does on a real field
+(FR-25). A recording of the past cannot show what would have happened under different
+decisions, which is why the experiments run in OPM.
+ 
+\textbf{First checks.} The design depends on a few things we have not yet shown. They are
+the first tasks of milestones M1 and M2 (\cref{tab:ms}): that OPM runs the Egg model from a
+script; that it can be stopped and restarted with new injection rates; how long one
+decision step takes (\cref{sec:risks}, R8); and how often injector pressure comes near its
+limit (R2). Each has a planned fallback in the risk list.
 
 % ============================================================== 6
 \section{Evaluation: How We Will Know Whether It Worked}\label{sec:eval}
