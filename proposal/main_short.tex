@@ -309,7 +309,7 @@ recorded decision.
 \endhead
 \bottomrule
 \endfoot
-\multicolumn{5}{@{}l}{\sffamily\bfseries\color{aurNavy} Reservoir simulation} \\*
+\multicolumn{5}{@{}l}{\sffamily\bfseries\color{aurNavy} Reservoir simulation NOTE: Changes to be made to Timurès part due to change to visualization. } \\*
 FR-01 & run any chosen Egg reservoir version in OPM Flow from settings kept under version control. & M & \AzizS & T \\
 FR-02 & move the simulation forward one decision step at a time, applying injection rates supplied by our software. & M & \AzizS & T \\
 FR-03 & after each step, read out well rates, total volumes, injector and producer BHP, and the pressure and water content of each cell, and save them in a fixed format. & M & \AzizS & T \\
@@ -369,82 +369,82 @@ NFR-12 & Licensing & Equinor's licence terms and credit for the Volve data are r
 \end{table}
 
 \subsection{Use cases}
+WORK IN PROGRESS
+% \Cref{fig:usecase} shows who uses the system and for what. The users are the
+% \emph{experimenter} (any team member running the system) and the \emph{reviewer}
+% (supervisors, second reader or poster-fair visitor). The OPM Flow simulator is an external
+% system. The three use cases at the heart of the project are UC1 (run a full simulation
+% with the controller in the loop), UC4 (compute the safety margin from the matching runs)
+% and UC6 (trigger a fault and observe the response). Their step-by-step descriptions are
+% kept in the repository.
 
-\Cref{fig:usecase} shows who uses the system and for what. The users are the
-\emph{experimenter} (any team member running the system) and the \emph{reviewer}
-(supervisors, second reader or poster-fair visitor). The OPM Flow simulator is an external
-system. The three use cases at the heart of the project are UC1 (run a full simulation
-with the controller in the loop), UC4 (compute the safety margin from the matching runs)
-and UC6 (trigger a fault and observe the response). Their step-by-step descriptions are
-kept in the repository.
-
-\begin{figure}[!htbp]
-\centering
-\begin{adjustbox}{max width=\textwidth}
-\begin{tikzpicture}[font=\sffamily\small,
-  uc/.style={rounded rectangle,draw=aurBlue,fill=aurLight,thick,minimum width=5.3cm,minimum height=0.62cm,inner sep=2pt,align=center,font=\sffamily\footnotesize},
-  opmuc/.style={uc,draw=aurTeal,fill=aurTeal!12},
-  actor/.style={align=center,font=\sffamily\footnotesize\bfseries,text=aurNavy},
-  inc/.style={aurGrey,dashed,->,thick},
-  inclbl/.style={font=\sffamily\scriptsize,text=aurGrey}]
-  \node[draw=aurNavy,rounded corners,thick,minimum width=12.4cm,minimum height=8.3cm] (sys) at (7.6,-3.05) {};
-  \node[anchor=north,font=\sffamily\small\bfseries,text=aurNavy] at (sys.north) {AURORA system boundary};
-  % left column: experimenter use cases
-  \node[opmuc] (u1)  at (4.95,-0.1) {UC1 Run a full simulation with the controller};
-  \node[uc]    (u2)  at (4.95,-1.2) {UC2 Train controller};
-  \node[opmuc] (u3)  at (4.95,-2.3) {UC3 Produce matching fast-model/OPM data};
-  \node[uc]    (u4)  at (4.95,-3.4) {UC4 Compute the safety margin};
-  \node[opmuc] (u5)  at (4.95,-4.5) {UC5 Run a batch of experiments};
-  \node[uc]    (u7)  at (4.95,-5.6) {UC7 Reproduce a result from its run record};
-  \node[uc]    (u10) at (4.95,-6.7) {UC10 Fit CRM to Volve data};
-  % right column: shared with reviewers
-  \node[uc] (u6) at (10.9,-1.2) {UC6 Inject fault scenario};
-  \node[uc] (u8) at (10.9,-3.4) {UC8 Replay and inspect run};
-  \node[uc] (u9) at (10.9,-4.5) {UC9 Compare controllers};
-  % actors
-  \node[actor] (exp) at (-0.4,-2.3) {\Large\faUser\\[2pt]Experimenter\\(team member)};
-  \node[actor,text=aurTeal] (opm) at (-0.4,-6.0) {\Large\faServer\\[2pt]OPM Flow\\simulator};
-  \node[actor] (rev) at (15.6,-2.8) {\Large\faUserTie\\[2pt]Reviewer\\(supervisor, second\\reader, visitor)};
-  % associations
-  \foreach \u in {u1,u2,u3,u4,u5,u7,u10}{\draw[aurNavy!60] ([xshift=2pt]exp.east) -- (\u.west);}
-  \foreach \u in {u1,u3,u5}{\draw[aurTeal,dashed,thick] ([xshift=2pt]opm.east) -- (\u.west);}
-  \foreach \u in {u6,u8,u9}{\draw[aurNavy!60] ([xshift=-2pt]rev.west) -- (\u.east);}
-  % include relations
-  \draw[inc] ([xshift=1.3cm]u4.north) -- ([xshift=1.3cm]u3.south) node[midway,right,inclbl]{$\langle\!\langle$include$\rangle\!\rangle$};
-  \draw[inc] (u9.west) -- node[above,inclbl]{$\langle\!\langle$include$\rangle\!\rangle$} (u5.east);
-  % legend
-  \node[anchor=north west,font=\sffamily\scriptsize,text=aurGrey,align=left] at ([yshift=-4pt]sys.south west)
-    {\tikz[baseline=-0.6ex]\node[rounded rectangle,draw=aurTeal,fill=aurTeal!12,thick,minimum width=0.8cm,minimum height=0.3cm]{};\;
-     Use case that runs the external OPM Flow simulator.\\
-     The experimenter can also perform UC6, UC8 and UC9.};
-\end{tikzpicture}
-\end{adjustbox}
-\caption[Use-case diagram]{Use-case diagram. Solid lines join each user to their main use cases; dashed teal lines
-mark use cases that run the external OPM Flow simulator.}
-\label{fig:usecase}
-\end{figure}
+% \begin{figure}[!htbp]
+% \centering
+% \begin{adjustbox}{max width=\textwidth}
+% \begin{tikzpicture}[font=\sffamily\small,
+%   uc/.style={rounded rectangle,draw=aurBlue,fill=aurLight,thick,minimum width=5.3cm,minimum height=0.62cm,inner sep=2pt,align=center,font=\sffamily\footnotesize},
+%   opmuc/.style={uc,draw=aurTeal,fill=aurTeal!12},
+%   actor/.style={align=center,font=\sffamily\footnotesize\bfseries,text=aurNavy},
+%   inc/.style={aurGrey,dashed,->,thick},
+%   inclbl/.style={font=\sffamily\scriptsize,text=aurGrey}]
+%   \node[draw=aurNavy,rounded corners,thick,minimum width=12.4cm,minimum height=8.3cm] (sys) at (7.6,-3.05) {};
+%   \node[anchor=north,font=\sffamily\small\bfseries,text=aurNavy] at (sys.north) {AURORA system boundary};
+%   % left column: experimenter use cases
+%   \node[opmuc] (u1)  at (4.95,-0.1) {UC1 Run a full simulation with the controller};
+%   \node[uc]    (u2)  at (4.95,-1.2) {UC2 Train controller};
+%   \node[opmuc] (u3)  at (4.95,-2.3) {UC3 Produce matching fast-model/OPM data};
+%   \node[uc]    (u4)  at (4.95,-3.4) {UC4 Compute the safety margin};
+%   \node[opmuc] (u5)  at (4.95,-4.5) {UC5 Run a batch of experiments};
+%   \node[uc]    (u7)  at (4.95,-5.6) {UC7 Reproduce a result from its run record};
+%   \node[uc]    (u10) at (4.95,-6.7) {UC10 Fit CRM to Volve data};
+%   % right column: shared with reviewers
+%   \node[uc] (u6) at (10.9,-1.2) {UC6 Inject fault scenario};
+%   \node[uc] (u8) at (10.9,-3.4) {UC8 Replay and inspect run};
+%   \node[uc] (u9) at (10.9,-4.5) {UC9 Compare controllers};
+%   % actors
+%   \node[actor] (exp) at (-0.4,-2.3) {\Large\faUser\\[2pt]Experimenter\\(team member)};
+%   \node[actor,text=aurTeal] (opm) at (-0.4,-6.0) {\Large\faServer\\[2pt]OPM Flow\\simulator};
+%   \node[actor] (rev) at (15.6,-2.8) {\Large\faUserTie\\[2pt]Reviewer\\(supervisor, second\\reader, visitor)};
+%   % associations
+%   \foreach \u in {u1,u2,u3,u4,u5,u7,u10}{\draw[aurNavy!60] ([xshift=2pt]exp.east) -- (\u.west);}
+%   \foreach \u in {u1,u3,u5}{\draw[aurTeal,dashed,thick] ([xshift=2pt]opm.east) -- (\u.west);}
+%   \foreach \u in {u6,u8,u9}{\draw[aurNavy!60] ([xshift=-2pt]rev.west) -- (\u.east);}
+%   % include relations
+%   \draw[inc] ([xshift=1.3cm]u4.north) -- ([xshift=1.3cm]u3.south) node[midway,right,inclbl]{$\langle\!\langle$include$\rangle\!\rangle$};
+%   \draw[inc] (u9.west) -- node[above,inclbl]{$\langle\!\langle$include$\rangle\!\rangle$} (u5.east);
+%   % legend
+%   \node[anchor=north west,font=\sffamily\scriptsize,text=aurGrey,align=left] at ([yshift=-4pt]sys.south west)
+%     {\tikz[baseline=-0.6ex]\node[rounded rectangle,draw=aurTeal,fill=aurTeal!12,thick,minimum width=0.8cm,minimum height=0.3cm]{};\;
+%      Use case that runs the external OPM Flow simulator.\\
+%      The experimenter can also perform UC6, UC8 and UC9.};
+% \end{tikzpicture}
+% \end{adjustbox}
+% \caption[Use-case diagram]{Use-case diagram. Solid lines join each user to their main use cases; dashed teal lines
+% mark use cases that run the external OPM Flow simulator.}
+% \label{fig:usecase}
+% \end{figure}
 
 \subsection{Success criteria and how progress is measured}
+This is a work in progress.
+% The project succeeds if the system meets its requirements and the final experiment gives a
+% clear answer to the research question, whichever way that answer goes. The
+% \emph{engineering criteria} must all be met:
+% \begin{itemize}
+% \item[E1] A complete simulation runs from start to finish with no manual steps, and every step is logged.
+% \item[E2] Re-running a saved run record reproduces the same decisions.
+% \item[E3] The safety filter never breaks its own limit when a safe decision exists, and reports when none exists.
+% \item[E4] Every fault scenario produces its expected response.
+% \item[E5] A reviewer can replay any run and see what the controller proposed, what was applied and why.
+% \end{itemize}
+% The \emph{research criterion} is that the hypotheses in \cref{sec:eval} are tested as
+% planned, with all thresholds fixed before the final test. A result showing that the margin
+% does not help, backed by evidence, still meets this criterion.
  
-The project succeeds if the system meets its requirements and the final experiment gives a
-clear answer to the research question, whichever way that answer goes. The
-\emph{engineering criteria} must all be met:
-\begin{itemize}
-\item[E1] A complete simulation runs from start to finish with no manual steps, and every step is logged.
-\item[E2] Re-running a saved run record reproduces the same decisions.
-\item[E3] The safety filter never breaks its own limit when a safe decision exists, and reports when none exists.
-\item[E4] Every fault scenario produces its expected response.
-\item[E5] A reviewer can replay any run and see what the controller proposed, what was applied and why.
-\end{itemize}
-The \emph{research criterion} is that the hypotheses in \cref{sec:eval} are tested as
-planned, with all thresholds fixed before the final test. A result showing that the margin
-does not help, backed by evidence, still meets this criterion.
- 
-\textbf{Measuring progress.} Progress is measured by what has been delivered, not by hours
-spent. At each weekly meeting we track: milestones completed against the plan in
-\cref{tab:ms}; the share of Must requirements (\cref{tab:fr}) whose check passes; whether
-the automated tests pass and their coverage (NFR-05); and the number of runs that can be
-reproduced from their saved records.
+% \textbf{Measuring progress.} Progress is measured by what has been delivered, not by hours
+% spent. At each weekly meeting we track: milestones completed against the plan in
+% \cref{tab:ms}; the share of Must requirements (\cref{tab:fr}) whose check passes; whether
+% the automated tests pass and their coverage (NFR-05); and the number of runs that can be
+% reproduced from their saved records.
 
 % ============================================================== 3
 \section{Background and State of the Art}
@@ -774,7 +774,7 @@ Each scenario is an automated test with an expected sequence of modes. We report
 faults are detected, how quickly, how many false alarms occur on clean runs, and how much
 performance is lost.
 
-\subsection{Logging, experiments and dashboard (\MahdiS)}
+\subsection{Logging, experiments, data preparation (\MahdiS)}
 
 One log record is written per decision step, with each stage stored separately: the
 measurements, the proposed decision, the fast model's prediction, the margin, the applied
@@ -783,8 +783,8 @@ also saves a record of exactly how it was produced: the version of the code, the
 which reservoir version, the random seeds, the simulator version and whether it succeeded.
 A batch runner works through every combination of controller, reservoir version and seed in
 parallel. It can resume after an interruption, and it keeps failed runs, with the reason,
-instead of discarding them. The dashboard reads only these logs, so it shows what actually
-happened.
+instead of discarding them. The presentation layer will read from the logs, and all the produced
+data.
 
 \subsection{Alternatives considered}
 
@@ -830,50 +830,51 @@ Margin & Percentile of measured errors (conformal) & Assume bell-curve errors; u
 
 % % ============================================================== 5
 \section{Data and Simulation}\label{sec:data}
+
+Weève begun this, but not complete yet.
+% \aur{} uses three outside resources, each for a different purpose (\cref{tab:res}).
  
-\aur{} uses three outside resources, each for a different purpose (\cref{tab:res}).
+% \begin{table}[!htbp]
+% \caption{Outside resources, what each is for, and what each cannot tell us.}\label{tab:res}
+% \small
+% \begin{tabularx}{\textwidth}{@{}P{2.2cm}P{3.6cm}LP{3.2cm}@{}}
+% \toprule
+% \textbf{Resource} & \textbf{What it is} & \textbf{What it lets us do} & \textbf{What it cannot show}\\
+% \midrule
+% Egg model \cite{jansen2014egg} & A published made-up reservoir in 100 versions & Run repeatable experiments on many different reservoirs & That results hold on a real field\\
+% OPM Flow \cite{rasmussen2021opm} & A detailed open-source simulator & See the result of any decision, including ones nobody ever made & What a real reservoir would do\\
+% Volve \cite{equinor2018volve} & Recorded production data from a real oil field & See what real measurements and real data problems look like & How a different controller would have done\\
+% \bottomrule
+% \end{tabularx}
+% \end{table}
  
-\begin{table}[!htbp]
-\caption{Outside resources, what each is for, and what each cannot tell us.}\label{tab:res}
-\small
-\begin{tabularx}{\textwidth}{@{}P{2.2cm}P{3.6cm}LP{3.2cm}@{}}
-\toprule
-\textbf{Resource} & \textbf{What it is} & \textbf{What it lets us do} & \textbf{What it cannot show}\\
-\midrule
-Egg model \cite{jansen2014egg} & A published made-up reservoir in 100 versions & Run repeatable experiments on many different reservoirs & That results hold on a real field\\
-OPM Flow \cite{rasmussen2021opm} & A detailed open-source simulator & See the result of any decision, including ones nobody ever made & What a real reservoir would do\\
-Volve \cite{equinor2018volve} & Recorded production data from a real oil field & See what real measurements and real data problems look like & How a different controller would have done\\
-\bottomrule
-\end{tabularx}
-\end{table}
+% \textbf{We generate our experimental data ourselves.} Each OPM run will produce a complete
+% record of flow rates and pressures for every well at every step. The error measurements,
+% the margin and the final test results all come from our own simulations, so the amount of
+% data is limited by computing time rather than by what is available. We plan about 2,000
+% short runs for measuring the fast model's error and about 840 full runs for the final test
+% (\cref{sec:eval}).
  
-\textbf{We generate our experimental data ourselves.} Each OPM run will produce a complete
-record of flow rates and pressures for every well at every step. The error measurements,
-the margin and the final test results all come from our own simulations, so the amount of
-data is limited by computing time rather than by what is available. We plan about 2,000
-short runs for measuring the fast model's error and about 840 full runs for the final test
-(\cref{sec:eval}).
+% \textbf{Egg.} The Egg model is a benchmark reservoir published for research on
+% waterflooding \cite{jansen2014egg,egg2014dataset}. As published, it has a
+% $60\times60\times7$ grid with about 18,500 active cells, eight water injectors and four
+% producers, and a ten-year (\SI{3600}{\day}) schedule. It comes in 100 versions that differ
+% in rock properties. Egg is deliberately small and simple, which is what makes thousands of
+% runs affordable; we do not present it as a real reservoir.
  
-\textbf{Egg.} The Egg model is a benchmark reservoir published for research on
-waterflooding \cite{jansen2014egg,egg2014dataset}. As published, it has a
-$60\times60\times7$ grid with about 18,500 active cells, eight water injectors and four
-producers, and a ten-year (\SI{3600}{\day}) schedule. It comes in 100 versions that differ
-in rock properties. Egg is deliberately small and simple, which is what makes thousands of
-runs affordable; we do not present it as a real reservoir.
+% \textbf{Volve.} The oil company Equinor released data from its Volve field in the North
+% Sea for research and teaching \cite{equinor2018volve}. We use only its production data, a
+% spreadsheet of about \SI{2}{MB} with daily rates and pressures for the field's wells. We do
+% not train on it. It serves two purposes: to base our fault scenarios on the kinds of
+% problems real measurements have, and to check how well the fast model does on a real field
+% (FR-25). A recording of the past cannot show what would have happened under different
+% decisions, which is why the experiments run in OPM.
  
-\textbf{Volve.} The oil company Equinor released data from its Volve field in the North
-Sea for research and teaching \cite{equinor2018volve}. We use only its production data, a
-spreadsheet of about \SI{2}{MB} with daily rates and pressures for the field's wells. We do
-not train on it. It serves two purposes: to base our fault scenarios on the kinds of
-problems real measurements have, and to check how well the fast model does on a real field
-(FR-25). A recording of the past cannot show what would have happened under different
-decisions, which is why the experiments run in OPM.
- 
-\textbf{First checks.} The design depends on a few things we have not yet shown. They are
-the first tasks of milestones M1 and M2 (\cref{tab:ms}): that OPM runs the Egg model from a
-script; that it can be stopped and restarted with new injection rates; how long one
-decision step takes (\cref{sec:risks}, R8); and how often injector pressure comes near its
-limit (R2). Each has a planned fallback in the risk list.
+% \textbf{First checks.} The design depends on a few things we have not yet shown. They are
+% the first tasks of milestones M1 and M2 (\cref{tab:ms}): that OPM runs the Egg model from a
+% script; that it can be stopped and restarted with new injection rates; how long one
+% decision step takes (\cref{sec:risks}, R8); and how often injector pressure comes near its
+% limit (R2). Each has a planned fallback in the risk list.
 
 % ============================================================== 6
 \section{Evaluation: How We Will Know Whether It Worked}\label{sec:eval}
@@ -1032,8 +1033,8 @@ C3 and C2 about the same & Memory does not help with these measurements; H4 is r
 \end{table}
 
 \subsection{Demonstration}
-
-The supervisors were clear that a demonstration must not be numbers scrolling in a
+NOTE: This will change, whatès below is what weère considering for the poster or presentation, but we have to edit this to include the simulation/visual
+The supervisors were clear that a demonstration should not be numbers scrolling in a
 terminal. The system is shown through an interactive dashboard 
 % Timur has to decide what he's gonna do and fix this depending on that
 
@@ -1170,8 +1171,8 @@ through to demonstration (\cref{tab:own}). Each part also has a named backup who
 every change to it and could carry on the work. The backups form a ring, so every member
 reviews one other part and is reviewed by someone else.
 
-\textbf{Who wrote what.} \tbc{To be filled in by the team before submission: which member
-wrote each section of this proposal.}
+\textbf{Who wrote what.} NOTE: To be filled in by the team before submission: which member
+wrote each section of this proposal.
 
 \begin{table}[!htbp]
 \caption{Ownership, backups and what each member delivers.}\label{tab:own}
@@ -1299,7 +1300,7 @@ milestone the team compares what was delivered with the plan and records any del
 its cause.
 
 \subsection{Milestones}
-
+NOTE: We will refine this a little before final submission.
 The work is divided into milestones of a month or less, each ending with something that
 can be shown (\cref{tab:ms}). Course dates are the tentative ones announced at the course
 information session.
